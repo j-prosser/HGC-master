@@ -350,7 +350,7 @@ BuildTreeBase::BuildTreeBase(TTree *tree) : fChain(0)
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
-   if (tree == 0) {
+   //if (tree == 0) {
 
       //TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/vols/cms/snwebb/HGC_ntuples/SingleGammaPt25_PU0_threshold-2/ntuples/ntuple_1.root");
       //if (!f || !f->IsOpen()) {
@@ -360,15 +360,19 @@ BuildTreeBase::BuildTreeBase(TTree *tree) : fChain(0)
       //dir->GetObject("HGCalTriggerNtuple",tree);
       //TFile *f (TFile*)gROOT->GetListOfFiles()->FindObject("ntuples/ntuple_1.root");
       
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/home/johannes/host/simple-data/ntuples/ntuple_1.root");
-      if (!f || !f->IsOpen()) {
-        f = new TFile("/home/johannes/host/simple-data/ntuples/ntuple_1.root");
-      }
-      TDirectory * dir = (TDirectory*)f->Get("/home/johannes/host/simple-data/ntuples/ntuple_1.root:/hgcalTriggerNtuplizer");
-      dir->GetObject("HGCalTriggerNtuple",tree);
+      //TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/home/johannes/host/simple-data/ntuples/ntuple_1.root"); ///home/johannes/host/simple-data/ntuples/ntuple_1.root");
+      
+	  //std::cout << "IS THIS RUN?  " << std::endl;
+	  
+	  //if (!f || !f->IsOpen()) {
+        //f = new TFile("/home/johannes/host/simple-data/ntuples/ntuple_1.root");
+      //}
+	  ///home/johannes/host/simple-data/ntuples/ntuple_1.root:/hgcalTriggerNtuplizer
+      //TDirectory * dir = (TDirectory*)f->Get("/home/johannes/host/simple-data/ntuples/ntuple_1.root:/hgcalTriggerNtuplizer");
+      //dir->GetObject("HGCalTriggerNtuple",tree);
 
-   }
-   Init(tree);
+   //}
+   //Init(tree);
 }
 
 BuildTreeBase::~BuildTreeBase()

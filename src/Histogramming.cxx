@@ -129,7 +129,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	// std::atan2 -> arctan(y/x), uses signs of y,x to find the correct quadrant!
 	// sum of energy in phi
 	double ephisum_forward = std::atan2( eysum_forward, exsum_forward ); 
-	double ephisum_backward = std::atan2( eysum_backward, exsum_backward );
+    double ephisum_backward = std::atan2( eysum_backward, eysum_backward );  
 
 	_event_variables[  "ex_sum_forward"  ] = exsum_forward;
 	_event_variables[  "ey_sum_forward"  ] = eysum_forward;
@@ -171,22 +171,25 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	// init for the weighted sums
 	_event_variables["fX_weighted_pt"] = 0;
 	_event_variables["fY_weighted_pt"] = 0;
-     
+    _event_variables["fY_sum"] = 0 ;
+    _event_variables["fX_sum"] = 0;	
     _event_variables["bX_weighted_pt"] = 0;
 	_event_variables["bY_weighted_pt"] = 0;
 
 
-    double r_check = 0.01;
+    double r_check = 0.04;
 
 	for (unsigned j=0; j < tc_pt->size(); j++){
 		double tmpphi = tc_eta->at(j);   
-		double tmpx,tmpy,tmppt;
+		double tmpx,tmpy,tmppt,tmpptx,tmppty;
 
 		tmpx = tc_x->at(j) / tc_z->at(j);
 		tmpy = tc_y->at(j) / tc_z->at(j);
 		tmppt = tc_pt->at(j);
+		tmpptx = tmppt*std::cos(tmpphi); 
+	    tmppty = tmppt*std::sin(tmpphi);
 
-		if (tmpphi > 0) { //FORWARD
+		if (tc_eta->at(j) > 0) { //FORWARD
  
 			//std::cout << tmpx << "|" << tmpy << "|" << tmppt << std::endl;
 			//std::cout <<"tc_x"<< tc_x->at(j) <<std::endl;
@@ -194,18 +197,20 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 			_event_details["xnf"].push_back(tmpx); 
 			_event_details["ynf"].push_back(tmpy);
 			_event_details["ptf"].push_back(tmppt);
+			_event_details["ptfx"].push_back(tmpptx);
+			_event_details["ptfy"].push_back(tmppty);
 		
 			/* Check if in radius */
 			if ( (tmpx - _event_variables["xnft"])*(tmpx - _event_variables["xnft"]) + (tmpy - _event_variables["ynft"])*(tmpy - _event_variables["ynft"]) < r_check*r_check) {
-				_event_details["xnfc"].push_back(tmpx);
-				_event_details["ynfc"].push_back(tmpy);
-				_event_details["ptfc"].push_back(tmppt);
-				_event_details["xnfc_pt"].push_back( tmppt*std::cos(tmpphi));
-				_event_details["ynfc_pt"].push_back( tmppt*std::sin(tmpphi));
+				_event_details["xnfc"].push_back( tmpx );
+				_event_details["ynfc"].push_back( tmpy );
+				_event_details["ptfc"].push_back( tmppt );
+				_event_details["ptfxc"].push_back( tmpptx );
+				_event_details["ptfyc"].push_back( tmppty );
         
 				/*Add position resolution calculations here to form sum of pt.x */
-				_event_variables["fX_weighted_pt"] += tmppt*std::cos(tmpphi);
-				_event_variables["fY_weighted_pt"] += tmppt*std::cos(tmpphi);
+				_event_variables["fX_weighted_pt"] += tmpx*tmpptx;  //tmppt*std::cos(tmpphi);
+				_event_variables["fY_weighted_pt"] += tmpy*tmppty;//tmppt*std::sin(tmpphi);
 				_event_variables["fX_sum"] +=tmpx;
 				_event_variables["fY_sum"] +=tmpy; 
 			}
@@ -236,7 +241,12 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	_event_variables["fX_weighted_pt"] /= _event_variables["fX_sum"];
 	_event_variables["fY_weighted_pt"] /= _event_variables["fY_sum"]; 
 	_event_variables["fd_pos"] = std::sqrt((_event_variables["fX_weighted_pt"] - _event_variables["xnft"])*(_event_variables["fX_weighted_pt"] - _event_variables["xnft"]) + (_event_variables["fY_weighted_pt"] - _event_variables["ynft"])*(_event_variables["fY_weighted_pt"] - _event_variables["ynft"])); 
-  
+     
+	/* Debug for position Resolution */
+    //std::cout <<  "T: "<<_event_variables["xnft" ]<< " "<< _event_variables["ynft"] << std::endl; 
+	//std::cout << "C: "<< _event_variables["fX_weighted_pt"]<< " " <<_event_variables["fY_weighted_pt"] << std::endl;
+    //std::cout << std::endl;    
+
 	_event_variables["bX_weighted_pt"] /= _event_variables["bX_sum"];
 	_event_variables["bY_weighted_pt"] /= _event_variables["bY_sum"]; 
 	_event_variables["bd_pos"] = std::sqrt((_event_variables["bX_weighted_pt"] - _event_variables["xnbt"])*(_event_variables["bX_weighted_pt"] - _event_variables["xnbt"]) + (_event_variables["bY_weighted_pt"] - _event_variables["ynbt"])*(_event_variables["bY_weighted_pt"] - _event_variables["ynbt"]));
