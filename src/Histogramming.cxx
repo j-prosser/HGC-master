@@ -238,7 +238,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
   
 	_event_variables["bX_weighted_pt"] /= _event_variables["bX_sum"];
 	_event_variables["bY_weighted_pt"] /= _event_variables["bY_sum"]; 
-	_event_variables["bd_pos"] = std::sqrt((_event_variables["bX_weighted_pt"] - _event_variables["xnft"])*(_event_variables["bX_weighted_pt"] - _event_variables["xnft"]) + (_event_variables["bY_weighted_pt"] - _event_variables["ynft"])*(_event_variables["bY_weighted_pt"] - _event_variables["ynft"]));
+	_event_variables["bd_pos"] = std::sqrt((_event_variables["bX_weighted_pt"] - _event_variables["xnbt"])*(_event_variables["bX_weighted_pt"] - _event_variables["xnbt"]) + (_event_variables["bY_weighted_pt"] - _event_variables["ynbt"])*(_event_variables["bY_weighted_pt"] - _event_variables["ynbt"]));
 }
 	/* For loop too slow? */
 	//for (unsigned i=0; i<candidate_events; ++i) {
@@ -291,7 +291,7 @@ void HGCPlotting::FillAllHists( std::string name ){
     _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_backward"  ] );   
     _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_backward"  ] );                
     _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_backward"] );
-    _cloned_hists[ name ] [ "dpos" ] ->Fill( _event_variables["bd_pos"]); 
+    //_cloned_hists[ name ] [ "dpos" ] ->Fill( _event_variables["bd_pos"]); 
   }
 }
 

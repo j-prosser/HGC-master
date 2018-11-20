@@ -69,7 +69,7 @@ void HGCPlotting::SetupRoot(){
 
 void HGCPlotting::Fill(){
 
-  Init(  _chain );
+  Init( _chain );
   Loop( );
 
 }
@@ -138,6 +138,8 @@ void HGCPlotting::Loop( ){
       if ( jentry > _max_events ) break;
     }
     for (auto& names : _HistoSets ){
+	  //std::cout << "TESTING1 "<< names << std::endl;
+
       FillAllHists( names );
     }
 	if (jentry==0) {
@@ -170,10 +172,6 @@ void HGCPlotting::Loop( ){
 			_2d_plots["test_plot"]->Fill(_event_details["xnf"][i], _event_details["ynf"][i], _event_details["ptf"][i]);	
 		}
 		//_2d_plots["test_plot"]->Draw("COLZ");
-        
-        
- 
-       		
 		// other plot
 		auto xlc = std::minmax_element(_event_details["xnfc"].begin(),_event_details["xnfc"].end());
         auto ylc = std::minmax_element(_event_details["ynfc"].begin(),_event_details["ynfc"].end());
@@ -184,11 +182,7 @@ void HGCPlotting::Loop( ){
 		//_2d_plots["cand_plot"] = new TH2D ("normalised_coord_cand_cirlce_0.05", "", 100,-1,1,100,-1,1);
 		for (unsigned i=0; i<_event_details["ptfc"].size(); ++i) {
 			_2d_plots["cand_plot"]->Fill(_event_details["xnfc"][i],_event_details["ynfc"][i]);
-		}
-		//_2d_plots["cand_plot"]->Draw("COLZ");
-		
-
-
+		}	
 	}
   }
 
