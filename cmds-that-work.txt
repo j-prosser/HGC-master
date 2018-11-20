@@ -1,0 +1,5 @@
+./FillHistograms --in_directory /home/johannes/host/simple-data/ --out_directory ./out3 --max_events 10000
+
+Where:
+	--in_directory refers to dir CONTAINING nutples/ntuple_<#>.root
+	--out_directory creates a dir './output', containing <out_direction> as a subdir with 'ouput.root' produced.
