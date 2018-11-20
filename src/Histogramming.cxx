@@ -52,7 +52,7 @@ void HGCPlotting::LoadHistoTemplates( std::string name ){
   if (name == "PU0_forward") {
 	  //
 	  
-    _cloned_hists[ name ] [ "dpos" ] = new TH1D ( (name + "_dpos").c_str(), "", 150, -1.0,1.0); // TODO
+    _cloned_hists[ name ] [ "dpos" ] = new TH1D ( (name + "_dpos").c_str(), "", 150, 0,.1); // TODO
   }
 }
 
@@ -186,6 +186,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 		tmpx = tc_x->at(j) / tc_z->at(j);
 		tmpy = tc_y->at(j) / tc_z->at(j);
 		tmppt = tc_pt->at(j);
+		/* pt in X and Y directions*/
 		tmpptx = tmppt*std::cos(tmpphi); 
 	    tmppty = tmppt*std::sin(tmpphi);
 
@@ -201,7 +202,10 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 			_event_details["ptfy"].push_back(tmppty);
 		
 			/* Check if in radius */
+			/* (X-X_t)^2 + (Y-Y_t)^2 < R^2 */
 			if ( (tmpx - _event_variables["xnft"])*(tmpx - _event_variables["xnft"]) + (tmpy - _event_variables["ynft"])*(tmpy - _event_variables["ynft"]) < r_check*r_check) {
+				//std::cout << _event_variables["xnft"] <<"|"<< tmpx <<"|" << _event_variables["ynft"] << "|" <<tmpy <<std::endl; 
+				
 				_event_details["xnfc"].push_back( tmpx );
 				_event_details["ynfc"].push_back( tmpy );
 				_event_details["ptfc"].push_back( tmppt );
@@ -211,8 +215,8 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 				/*Add position resolution calculations here to form sum of pt.x */
 				_event_variables["fX_weighted_pt"] += tmpx*tmpptx;  //tmppt*std::cos(tmpphi);
 				_event_variables["fY_weighted_pt"] += tmpy*tmppty;//tmppt*std::sin(tmpphi);
-				_event_variables["fX_sum"] +=tmpx;
-				_event_variables["fY_sum"] +=tmpy; 
+				_event_variables["fX_sum"] +=tmpptx;
+				_event_variables["fY_sum"] +=tmppty; 
 			}
 
 		} else { /* Backward */
