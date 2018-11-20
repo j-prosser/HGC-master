@@ -176,7 +176,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	_event_variables["bY_weighted_pt"] = 0;
 
 
-
+    double r_check = 0.01;
 
 	for (unsigned j=0; j < tc_pt->size(); j++){
 		double tmpphi = tc_eta->at(j);   
@@ -196,7 +196,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 			_event_details["ptf"].push_back(tmppt);
 		
 			/* Check if in radius */
-			if ( (tmpx - _event_variables["xnft"])*(tmpx - _event_variables["xnft"]) + (tmpy - _event_variables["ynft"])*(tmpy - _event_variables["ynft"]) < 0.05*0.05) {
+			if ( (tmpx - _event_variables["xnft"])*(tmpx - _event_variables["xnft"]) + (tmpy - _event_variables["ynft"])*(tmpy - _event_variables["ynft"]) < r_check*r_check) {
 				_event_details["xnfc"].push_back(tmpx);
 				_event_details["ynfc"].push_back(tmpy);
 				_event_details["ptfc"].push_back(tmppt);
@@ -216,7 +216,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 			_event_details["ptb"].push_back(tmppt);
         	
 			/* Check if in radius */
-			if ( (tmpx - _event_variables["xnbt"])*(tmpx - _event_variables["xnbt"]) + (tmpy - _event_variables["ynbt"])*(tmpy - _event_variables["ynbt"]) < 0.05*0.05) {
+			if ( (tmpx - _event_variables["xnbt"])*(tmpx - _event_variables["xnbt"]) + (tmpy - _event_variables["ynbt"])*(tmpy - _event_variables["ynbt"]) < r_check*r_check) {
 				/* Fill Candidate Arrays */
 				_event_details["xnbc"].push_back(tmpx);
 				_event_details["ynbc"].push_back(tmpy);
