@@ -44,6 +44,9 @@ void HGCPlotting::LoadHistoTemplates( std::string name ){
     _cloned_hists[ name ] [ "dphi_met" ] = new TH1D ( (name + "_dphi_met").c_str(), "", 150,-0.05,0.05);// delta Phi, difference between phi
     _cloned_hists[ name ] [ "denergy" ] = new TH1D ( (name + "_denergy").c_str(), "", 150, -5.0,5.0); // difference in energy  
     _cloned_hists[ name ] [ "dpos" ] = new TH1D ( (name + "_dpos").c_str(), "", 150, 0,.1);
+    _cloned_hists[ name ] [ "dpos_2" ] = new TH1D ( (name + "_dpos_E").c_str(), "", 150, 0,.9);
+
+
 	//
 	
   } //else if (name="single_event") {
@@ -165,11 +168,12 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	// init for the weighted sums
 	_event_variables["fX_weighted_pt"] = 0;
 	_event_variables["fY_weighted_pt"] = 0;
-    _event_variables["fY_sum"] = 0 ;
-    _event_variables["fX_sum"] = 0;	
-    _event_variables["bX_weighted_pt"] = 0;
+        _event_variables["fY_sum"] = 0 ;
+        _event_variables["fX_sum"] = 0;	
+        _event_variables["bX_weighted_pt"] = 0;
 	_event_variables["bY_weighted_pt"] = 0;
-
+	_event_variables["fY_weighted_Et"] = 0;
+	_event_variables["fX_weighted_Et"] = 0;
 	_event_variables["bX_sum"] =0;
 	_event_variables["bY_sum"] =0; 
 
@@ -186,7 +190,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 
 		/* pt in X and Y directions*/
 		tmpptx = tmppt*std::cos(tmpphi); 
-	    tmppty = tmppt*std::sin(tmpphi);
+                tmppty = tmppt*std::sin(tmpphi);
 
 		if (tc_eta->at(j) > 0) { /* FORWARD: Implemented sum(p_x.x)/sum(p_x)*/
  
@@ -214,7 +218,9 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 				_event_variables["fX_weighted_pt"] += tmpx*tmpptx;  //tmppt*std::cos(tmpphi);
 				_event_variables["fY_weighted_pt"] += tmpy*tmppty;//tmppt*std::sin(tmpphi);
 				_event_variables["fX_sum"] +=tmpptx;
-				_event_variables["fY_sum"] +=tmppty; 
+				_event_variables["fY_sum"] +=tmppty;
+				_event_variables["fX_weighted_Et"] += tmpx*tmppt;
+				_event_variables["fY_weighted_Et"] += tmpy*tmppt;
 			}
 
 		} else { /* Backward: IMPLEMENTED sum(pt.x)/sum(pt)*/
@@ -246,12 +252,15 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 		}
 	} /* end of loop*/
    
-	/**/
+	/*This section computes the weighted averages for both the one weighted by ptx(transverse energy/momentum) and pt (energy) in the forward calorimeter*/
 	_event_variables["fX_weighted_pt"] /= _event_variables["fX_sum"];
 	_event_variables["fY_weighted_pt"] /= _event_variables["fY_sum"]; 
 	_event_variables["fd_pos"] = std::sqrt((_event_variables["fX_weighted_pt"] - _event_variables["xnft"])*(_event_variables["fX_weighted_pt"] - _event_variables["xnft"]) + (_event_variables["fY_weighted_pt"] - _event_variables["ynft"])*(_event_variables["fY_weighted_pt"] - _event_variables["ynft"])); 
-     
-
+    	_event_variables["fX_weighted_Et"] /= _event_variables["fX_sum"];
+	_event_variables["fY_weighted_Et"] /= _event_variables["fY_sum"]; 
+	_event_variables["fd_pos_E"] = std::sqrt((_event_variables["fX_weighted_Et"] - _event_variables["xnft"])*(_event_variables["fX_weighted_Et"] - _event_variables["xnft"]) + (_event_variables["fY_weighted_Et"] - _event_variables["ynft"])*(_event_variables["fY_weighted_Et"] - _event_variables["ynft"])); 
+    	
+	//This section does the same for the backwards calorimeter. The pt calculations are not yet included in the backwards calorimeter, and NEED TO BE ADDED.
 	_event_variables["bX_weighted_pt"] /= _event_variables["bX_sum"];
 	_event_variables["bY_weighted_pt"] /= _event_variables["bY_sum"]; 
 	_event_variables["bd_pos"] = std::sqrt((_event_variables["bX_weighted_pt"] - _event_variables["xnbt"])*(_event_variables["bX_weighted_pt"] - _event_variables["xnbt"]) + (_event_variables["bY_weighted_pt"] - _event_variables["ynbt"])*(_event_variables["bY_weighted_pt"] - _event_variables["ynbt"]));
@@ -315,7 +324,9 @@ void HGCPlotting::FillAllHists( std::string name ){
     _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_forward"  ] );    
     _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_forward"] );
 	// POSITION RES. FILLED HERE
-	_cloned_hists[ name ] [ "dpos" ] ->Fill(_event_variables["fd_pos"]);
+    _cloned_hists[ name ] [ "dpos_2" ] ->Fill(_event_variables["fd_pos_E"]);
+    _cloned_hists[ name ] [ "dpos" ] ->Fill(_event_variables["fd_pos"]);
+
   } else if ( name == "PU0_backward" ){
     _cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
     _cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_backward"  ] );
