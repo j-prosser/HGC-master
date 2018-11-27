@@ -110,7 +110,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	double eysum_forward = 0;
 	double exsum_backward = 0;
 	double eysum_backward = 0;
-   
+  
 	for (unsigned int i = 0; i < tc_pt->size(); i++){
 		// IF-statement to filter between forward and backward calorimeters...
 		if  ( tc_eta->at(i)>0){
@@ -201,19 +201,21 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 	_event_variables["fE_sum"] = 0;
     _event_variables["bE_sum"] = 0; 
 
+	// Loop over all TCs in a single event
 	for (unsigned j=0; j < tc_pt->size(); j++){
-		double tmpphi = tc_eta->at(j);   
-		double tmpx,tmpy,tmppt,tmpptx,tmppty;
+		
+		//double tmpphi = tc_eta->at(j);   
+		double tmpx,tmpy,tmppt; //,tmpptx,tmppty;
 
 		tmpx = tc_x->at(j) / tc_z->at(j);
 		tmpy = tc_y->at(j) / tc_z->at(j);
 		tmppt = tc_pt->at(j);
-        //std::cout << "tc_pt: " << tmppt << std::endl;
 
 		/* pt in X and Y directions*/
-		tmpptx = tmppt*std::cos(tmpphi); 
-                tmppty = tmppt*std::sin(tmpphi);
+		//tmpptx = tmppt*std::cos(tmpphi); 
+        //tmppty = tmppt*std::sin(tmpphi);
 
+		// Choose Between Forward and backward
 		if (tc_eta->at(j) > 0) { /* FORWARD: Implemented sum(p_x.x)/sum(p_x)*/
  
 			//std::cout << tmpx << "|" << tmpy << "|" << tmppt << std::endl;
@@ -222,42 +224,45 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 			_event_details["xnf"].push_back(tmpx); 
 			_event_details["ynf"].push_back(tmpy);
 			_event_details["ptf"].push_back(tmppt);
-			_event_details["ptfx"].push_back(tmpptx);
-			_event_details["ptfy"].push_back(tmppty);
+			//_event_details["ptfx"].push_back(tmpptx);
+			//_event_details["ptfy"].push_back(tmppty);
 		
-			/* Check if in radius */
-			/* (X-X_t)^2 + (Y-Y_t)^2 < R^2 */
-			if ( (tmpx - _event_variables["xnft"])*(tmpx -  _event_variables["xnft"]) + (tmpy - _event_variables["ynft"])*(tmpy - _event_variables["ynft"]) <R*R) {
-				//std::cout << _event_variables["xnft"] <<"|"<< tmpx <<"|" << _event_variables["ynft"] << "|" <<tmpy <<std::endl; 
+			/* CHECK IF TC IS IN RADIUS R
+			 * (X-X_t)^2 + (Y-Y_t)^2 < R^2 */
+			if ( (tmpx-_event_variables["xnft"])*(tmpx-_event_variables["xnft"]) 
+					+ (tmpy - _event_variables["ynft"])*(tmpy - _event_variables["ynft"]) < R*R ) {
 				
+				/*Add TC variables to vectors */
 				_event_details["xnfc"].push_back( tmpx );
 				_event_details["ynfc"].push_back( tmpy );
 				_event_details["ptfc"].push_back( tmppt );
-				_event_details["ptfxc"].push_back( tmpptx );
-				_event_details["ptfyc"].push_back( tmppty );
+				//_event_details["ptfxc"].push_back( tmpptx );
+				//_event_details["ptfyc"].push_back( tmppty );
         
 				/*Add position resolution calculations here to form sum of pt.x */
-				_event_variables["fX_weighted_pt"] += tmpx*tmpptx;  //tmppt*std::cos(tmpphi);
-				_event_variables["fY_weighted_pt"] += tmpy*tmppty;//tmppt*std::sin(tmpphi);
-				_event_variables["fX_sum"] +=tmpptx;
-				_event_variables["fY_sum"] +=tmppty;
+				//_event_variables["fX_weighted_pt"] += tmpx*tmpptx;  //tmppt*std::cos(tmpphi);
+				//_event_variables["fY_weighted_pt"] += tmpy*tmppty;//tmppt*std::sin(tmpphi);
+				//_event_variables["fX_sum"] +=tmpptx;
+				//_event_variables["fY_sum"] +=tmppty;
 				_event_variables["fE_sum"] +=tmppt;
 				_event_variables["fX_weighted_Et"] += tmpx*tmppt;
 				_event_variables["fY_weighted_Et"] += tmpy*tmppt;
 			}
 
 		} else { /* Backward: IMPLEMENTED sum(pt.x)/sum(pt)*/
-			tmpx = -tmpx;
-			tmpy = -tmpy;
+			/*Invert co-ordinates for no good reason*/
+			tmpx = -tmpx; tmpy = -tmpy;
+
 			_event_details["xnb"].push_back(tmpx);
 			_event_details["ynb"].push_back(tmpy);
 			_event_details["ptb"].push_back(tmppt);
         	
-			/* Check if in radius */
-
             //std::cout << "tmp x,y: " << tmpx<<","<<tmpy<<std::endl;
 			//std::cout << "e.v. TRUTH: x,y: "<<_event_variables["xnbt"]<<","<<_event_variables["ynbt"]<<std::endl;
-			if ( (tmpx - _event_variables["xnbt"])*(tmpx - _event_variables["xnbt"]) + (tmpy - _event_variables["ynbt"])*(tmpy - _event_variables["ynbt"]) < R*R) {
+			
+			/* Check if in radius */
+			if ( (tmpx - _event_variables["xnbt"])*(tmpx - _event_variables["xnbt"]) 
+					+(tmpy - _event_variables["ynbt"])*(tmpy - _event_variables["ynbt"]) < R*R ) {
 				/* Fill Candidate Arrays */
 				_event_details["xnbc"].push_back(tmpx);
 				_event_details["ynbc"].push_back(tmpy);
@@ -278,34 +283,44 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 		}
 	} /* end of loop*/
    
-	/*This section computes the weighted averages for both the one weighted by ptx(transverse energy/momentum) and pt (energy) in the forward calorimeter*/
+	/*This section computes the weighted averages for both the one weighted by ptx(transverse energy/momentum) in the forward calorimeter*/
+	/*
 	_event_variables["fX_weighted_pt"] /= _event_variables["fX_sum"];
 	_event_variables["fY_weighted_pt"] /= _event_variables["fY_sum"]; 
 	
 	_event_variables["fd_pos"] = std::sqrt((_event_variables["fX_weighted_pt"] - _event_variables["xnft"])*(_event_variables["fX_weighted_pt"] - _event_variables["xnft"]) + (_event_variables["fY_weighted_pt"] - _event_variables["ynft"])*(_event_variables["fY_weighted_pt"] - _event_variables["ynft"])); 
-    	
+    */
+
+	/* Forward Calorimeter XY-position resolution weighted by energy*/
 	_event_variables["fX_weighted_Et"] /= _event_variables["fE_sum"];
-	_event_variables["fY_weighted_Et"] /= _event_variables["fE_sum"]; 
-	
-	_event_variables["fd_pos_E"] = std::sqrt((_event_variables["fX_weighted_Et"] - _event_variables["xnft"])*(_event_variables["fX_weighted_Et"] - _event_variables["xnft"]) + (_event_variables["fY_weighted_Et"] - _event_variables["ynft"])*(_event_variables["fY_weighted_Et"] - _event_variables["ynft"])); 
+	_event_variables["fY_weighted_Et"] /= _event_variables["fE_sum"]; 	
+	/* Forward radial resolution */	
+	_event_variables["fd_pos_E"] = std::sqrt( 
+			(_event_variables["fX_weighted_Et"]-_event_variables["xnft"]) 
+			*(_event_variables["fX_weighted_Et"] - _event_variables["xnft"]) 
+			+ (_event_variables["fY_weighted_Et"] - _event_variables["ynft"])
+			*(_event_variables["fY_weighted_Et"] - _event_variables["ynft"]) ); 
     	
 	//This section does the same for the backwards calorimeter. The pt calculations are not yet included in the backwards calorimeter, and NEED TO BE ADDED.
 	/*
 	_event_variables["bX_weighted_pt"] /= _event_variables["bX_sum"];
 	_event_variables["bY_weighted_pt"] /= _event_variables["bY_sum"]; 
 	
-
 	_event_variables["bd_pos"] = std::sqrt((_event_variables["bX_weighted_pt"] - _event_variables["xnbt"])*(_event_variables["bX_weighted_pt"] - _event_variables["xnbt"]) + (_event_variables["bY_weighted_pt"] - _event_variables["ynbt"])*(_event_variables["bY_weighted_pt"] - _event_variables["ynbt"]));
 	*/
+
+	/* Backward Calorimeter XY-position resolution weighted by energy*/
 	_event_variables["bX_weighted_Et"] /= _event_variables["bE_sum"];
 	_event_variables["bY_weighted_Et"] /= _event_variables["bE_sum"];
-		
-	
-	_event_variables["bd_pos_E"] = std::sqrt((_event_variables["bX_weighted_Et"] - _event_variables["xnbt"])*(_event_variables["bX_weighted_Et"] - _event_variables["xnbt"]) + (_event_variables["bY_weighted_Et"] - _event_variables["ynbt"])*(_event_variables["bY_weighted_Et"] - _event_variables["ynbt"])); 
+	/* Backward radial resolution */	
+	_event_variables["bd_pos_E"] = std::sqrt(
+			(_event_variables["bX_weighted_Et"] - _event_variables["xnbt"])
+			*(_event_variables["bX_weighted_Et"] - _event_variables["xnbt"])
+			+(_event_variables["bY_weighted_Et"] - _event_variables["ynbt"])
+			*(_event_variables["bY_weighted_Et"] - _event_variables["ynbt"]) ); 
 
     /*difference in energy for circle*/
 	_event_variables["fd_energy_R"] = _event_variables["fE_sum"] - gen_pt->at(0);
-	
 	_event_variables["bd_energy_R"] = _event_variables["bE_sum"] - gen_pt->at(1);
 
 }
@@ -322,7 +337,7 @@ void HGCPlotting::FillAllHists( std::string name ){
   // If run multiple times, will currently replace itself for each R
   CalculateReducedCircle(r); 
   
-  
+  //CalculateReducedCircle(r-0.02);  
   //  if ( name == "PU0" ||  name == "PU200" ){
 
 
