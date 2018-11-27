@@ -12,15 +12,16 @@ for element in list_of_keys:
 		radii_list.append(element.GetName()[-4:])
 
 #Creates an array of the rms and mean data of all the objects
-list_of_sigma_mean_touples = []
+list_of_rms_mean_touples = []
 for element in Histogramm_List:
-		list_of_sigma_mean_touples.append((element.GetStdDev(), element.GetMean()))
+		list_of_rms_mean_touples.append((element.GetStdDev(), element.GetMean()))
 
-def sigma_over_mean(sigma_mean_touple):
-		if sigma_mean_touple[1] == 0:
+#define the function to get turn the (rms, mean) touples defined above into single rms/mean values.
+def rms_over_mean(rms_mean_touple):
+		if rms_mean_touple[1] == 0:
 				result = 0
 		else:
-				result = sigma_mean_touple[0] / sigma_mean_touple[1]
+				result = rms_mean_touple[0] / rms_mean_touple[1]
 		return result
 #saves all the histograms, uncomment if necessary
 '''
@@ -31,17 +32,17 @@ for element in Histogramm_List:
 
 
 #plots a graph of the uncertainty in the energy over the energy. 
-sigma_over_mean_array = [sigma_over_mean(params) for params in list_of_sigma_mean_touples]
+rms_over_mean_array = [rms_over_mean(rms_mean_touple) for rms_mean_touple in list_of_rms_mean_touples]
 #comment out next 2 lines once files follow naming convention.
 radii_listPlaceholder = range(len(radii_list))
-plt.scatter(radii_listPlaceholder, sigma_over_mean_array)
+plt.scatter(radii_listPlaceholder, rms_over_mean_array)
 
 
 #uncomment next 2 lines once files follow naming convention
-#plt.scatter(radii_list, sigma_over_mean_array)
+#plt.scatter(radii_list, rms_over_mean_array)
 #radii_list = [float(radius_string) for radius_string in radii_list]
 
-plt.ylim(min(sigma_over_mean_array), max(sigma_over_mean_array))
+plt.ylim(min(rms_over_mean_array), max(rms_over_mean_array))
 plt.xlim(0, max(radii_listPlaceholder))
 plt.title("Sigma_E/E for various R")
 plt.xlabel("radius (cm)")
