@@ -45,8 +45,11 @@ void HGCPlotting::LoadHistoTemplates( std::string name ){
     _cloned_hists[ name ] [ "denergy" ] = new TH1D ( (name + "_denergy").c_str(), "", 150, -5.0,5.0); // difference in energy  
     _cloned_hists[ name ] [ "dpos" ] = new TH1D ( (name + "_dpos").c_str(), "", 150, 0,.1);
     _cloned_hists[ name ] [ "dpos_2" ] = new TH1D ( (name + "_dpos_E").c_str(), "", 150, 0,.1);
-    _cloned_hists[ name ] [ "dpos_X" ] = new TH1D ( (name + "_dpos_x").c_str(), "", 150, -1,1);
-    _cloned_hists[ name ] [ "dpos_Y" ] = new TH1D ( (name + "_dpos_y").c_str(), "", 150, -1,1);
+    _cloned_hists[ name ] [ "dpos_X" ] = new TH1D ( (name + "_dpos_x").c_str(), "", 150, -.04,.04);
+    _cloned_hists[ name ] [ "dpos_Y" ] = new TH1D ( (name + "_dpos_y").c_str(), "", 150, -.04,.04);
+    _cloned_hists[ name ] [ "dpos_X_E" ] = new TH1D ( (name + "_dpos_x_E").c_str(), "", 150, -.04,.04);
+    _cloned_hists[ name ] [ "dpos_Y_E" ] = new TH1D ( (name + "_dpos_y_E").c_str(), "", 150, -.04,.04);
+
 
 
 	//
@@ -160,10 +163,10 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 
 	/*TRUTH VALUES*/
 	// in our normalised co-ordinates  
-	_event_variables["xnft"] = std::sin(2 * std::atan2(std::exp( -gen_eta->at(0) ),1. ) ) * std::cos(gen_phi->at(0));
-	_event_variables["ynft"] = std::sin(2 * std::atan2(std::exp( -gen_eta->at(0) ),1. ) ) * std::sin(gen_phi->at(0));
-	_event_variables["xnbt"] = std::sin(2 * std::atan2(std::exp( -gen_eta->at(1) ),1. ) ) * std::cos(gen_phi->at(1));
-	_event_variables["ynbt"] = std::sin(2 * std::atan2(std::exp( -gen_eta->at(1) ),1. ) ) * std::sin(gen_phi->at(1)); 
+	_event_variables["xnft"] = std::cos(gen_phi->at(0)) / sinh(gen_eta->at(0));  //std::sin(2 * std::atan2(std::exp( -gen_eta->at(0) ),1. ) ) * std::cos(gen_phi->at(0));
+	_event_variables["ynft"] = std::sin(gen_phi->at(0)) / sinh(gen_eta->at(0));  //std::sin(2 * std::atan2(std::exp( -gen_eta->at(0) ),1. ) ) * std::sin(gen_phi->at(0));
+	_event_variables["xnbt"] = std::cos(gen_phi->at(0)) / sinh(gen_eta->at(1));  //std::sin(2 * std::atan2(std::exp( -gen_eta->at(1) ),1. ) ) * std::cos(gen_phi->at(1));
+	_event_variables["ynbt"] = std::sin(gen_phi->at(0)) / sinh(gen_eta->at(1));  //std::sin(2 * std::atan2(std::exp( -gen_eta->at(1) ),1. ) ) * std::sin(gen_phi->at(1)); 
 
 	// Loop to create circle and _event_details
 	//double av_pt_xy=0; // expectation value of pt (?)
@@ -329,8 +332,11 @@ void HGCPlotting::FillAllHists( std::string name ){
 	// POSITION RES. FILLED HERE
     _cloned_hists[ name ] [ "dpos_2" ] ->Fill(_event_variables["fd_pos_E"]);
     _cloned_hists[ name ] [ "dpos" ] ->Fill(_event_variables["fd_pos"]);
-    _cloned_hists[ name ] [ "dpos_X" ] ->Fill(_event_variables["fX_weighted_pt"]);
-    _cloned_hists[ name ] [ "dpos_Y" ] ->Fill(_event_variables["fY_weighted_pt"]);
+    _cloned_hists[ name ] [ "dpos_X" ] ->Fill(_event_variables["fX_weighted_pt"]- _event_variables["xnft"]);
+    _cloned_hists[ name ] [ "dpos_Y" ] ->Fill(_event_variables["fY_weighted_pt"] - _event_variables["ynft"]);
+    _cloned_hists[ name ] [ "dpos_X_E" ] ->Fill(_event_variables["fX_weighted_Et"]- _event_variables["xnft"]);
+    _cloned_hists[ name ] [ "dpos_Y_E" ] ->Fill(_event_variables["fY_weighted_Et"] - _event_variables["ynft"]);
+
 
   } else if ( name == "PU0_backward" ){
     _cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
