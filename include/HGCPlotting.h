@@ -85,6 +85,8 @@ class HGCPlotting : public BuildTreeBase {
 
   void CalculateTriggerCellVariables();
 
+  void CalculateReducedCircle(const double& R);
+
   void FillAllHists( std::string name );
 
   //void FillPlot(std::string name); // potentially use this?

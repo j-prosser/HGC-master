@@ -49,7 +49,8 @@ void HGCPlotting::LoadHistoTemplates( std::string name ){
     _cloned_hists[ name ] [ "dpos_Y" ] = new TH1D ( (name + "_dpos_y").c_str(), "", 150, -.04,.04);
     _cloned_hists[ name ] [ "dpos_X_E" ] = new TH1D ( (name + "_dpos_x_E").c_str(), "", 150, -.04,.04);
     _cloned_hists[ name ] [ "dpos_Y_E" ] = new TH1D ( (name + "_dpos_y_E").c_str(), "", 150, -.04,.04);
-
+    
+	_cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);
 
 
 	//
@@ -161,28 +162,44 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	_event_variables["denergy_forward"] = ersum_forward - gen_pt->at(0);
 	_event_variables["denergy_backward"] = ersum_backward - gen_pt->at(1);
 
-	/*TRUTH VALUES*/ cout << "k";
+	/*TRUTH VALUES*/ 
 	// in our normalised co-ordinates  
 	_event_variables["xnft"] = std::cos(gen_phi->at(0)) / sinh(gen_eta->at(0));  //std::sin(2 * std::atan2(std::exp( -gen_eta->at(0) ),1. ) ) * std::cos(gen_phi->at(0));
 	_event_variables["ynft"] = std::sin(gen_phi->at(0)) / sinh(gen_eta->at(0));  //std::sin(2 * std::atan2(std::exp( -gen_eta->at(0) ),1. ) ) * std::sin(gen_phi->at(0));
 	_event_variables["xnbt"] = std::cos(gen_phi->at(0)) / sinh(gen_eta->at(1));  //std::sin(2 * std::atan2(std::exp( -gen_eta->at(1) ),1. ) ) * std::cos(gen_phi->at(1));
 	_event_variables["ynbt"] = std::sin(gen_phi->at(0)) / sinh(gen_eta->at(1));  //std::sin(2 * std::atan2(std::exp( -gen_eta->at(1) ),1. ) ) * std::sin(gen_phi->at(1)); 
 
+
+	/* Debug for position Resolution */
+        //std::cout <<  "T: "<<_event_variables["xnbt" ]<< " | "<< _event_variables["ynbt"] << std::endl; 
+	//std::cout << "C: "<< _event_variables["bX_weighted_pt"]<< " | " <<_event_variables["bY_weighted_pt"] << std::endl;
+	//std::cout << _event_variables["bX_sum"]<<std::endl;
+	//std::cout << std::endl;    
+
+
+
+
+}
+
+void HGCPlotting::CalculateReducedCircle(const double& R) {
+	/* Calculates values for energy/ position resolution in the circle of radius R = r/z_0 */
+	
+
 	// Loop to create circle and _event_details
 	//double av_pt_xy=0; // expectation value of pt (?)
 	// init for the weighted sums
 	_event_variables["fX_weighted_pt"] = 0;
 	_event_variables["fY_weighted_pt"] = 0;
-        _event_variables["fY_sum"] = 0 ;
-        _event_variables["fX_sum"] = 0;	
-        _event_variables["bX_weighted_pt"] = 0;
+    _event_variables["fY_sum"] = 0 ;
+    _event_variables["fX_sum"] = 0;	
+    _event_variables["bX_weighted_pt"] = 0;
 	_event_variables["bY_weighted_pt"] = 0;
 	_event_variables["fY_weighted_Et"] = 0;
 	_event_variables["fX_weighted_Et"] = 0;
 	_event_variables["bX_sum"] =0;
 	_event_variables["bY_sum"] =0; 
 	_event_variables["fE_sum"] = 0;
-    double r_check = 0.04;
+    _event_variables["bE_sum"] = 0; 
 
 	for (unsigned j=0; j < tc_pt->size(); j++){
 		double tmpphi = tc_eta->at(j);   
@@ -210,7 +227,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 		
 			/* Check if in radius */
 			/* (X-X_t)^2 + (Y-Y_t)^2 < R^2 */
-			if ( (tmpx - _event_variables["xnft"])*(tmpx -  _event_variables["xnft"]) + (tmpy - _event_variables["ynft"])*(tmpy - _event_variables["ynft"]) < r_check*r_check) {
+			if ( (tmpx - _event_variables["xnft"])*(tmpx -  _event_variables["xnft"]) + (tmpy - _event_variables["ynft"])*(tmpy - _event_variables["ynft"]) <R*R) {
 				//std::cout << _event_variables["xnft"] <<"|"<< tmpx <<"|" << _event_variables["ynft"] << "|" <<tmpy <<std::endl; 
 				
 				_event_details["xnfc"].push_back( tmpx );
@@ -240,7 +257,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 
             //std::cout << "tmp x,y: " << tmpx<<","<<tmpy<<std::endl;
 			//std::cout << "e.v. TRUTH: x,y: "<<_event_variables["xnbt"]<<","<<_event_variables["ynbt"]<<std::endl;
-			if ( (tmpx - _event_variables["xnbt"])*(tmpx - _event_variables["xnbt"]) + (tmpy - _event_variables["ynbt"])*(tmpy - _event_variables["ynbt"]) < r_check*r_check) {
+			if ( (tmpx - _event_variables["xnbt"])*(tmpx - _event_variables["xnbt"]) + (tmpy - _event_variables["ynbt"])*(tmpy - _event_variables["ynbt"]) < R*R) {
 				/* Fill Candidate Arrays */
 				_event_details["xnbc"].push_back(tmpx);
 				_event_details["ynbc"].push_back(tmpy);
@@ -249,11 +266,14 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 				//_event_details["ynbc_pt"].push_back( tmppt*std::sin(tmpphi));
         
 				/*Add position resolution calculations here to form sum of pt.x */
-				_event_variables["bX_weighted_pt"] += tmppt*tmpx;
-				_event_variables["bY_weighted_pt"] += tmppt*tmpy;
-				_event_variables["bX_sum"] += tmppt;
-				_event_variables["bY_sum"] += tmppt;
-			    //std::cout << "pt: " << tmppt << std::endl;	
+				_event_variables["bX_weighted_Et"] += tmppt*tmpx;
+				_event_variables["bY_weighted_Et"] += tmppt*tmpy;
+				
+				//_event_variables["bX_sum"] += tmppt;
+				//_event_variables["bY_sum"] += tmppt;
+				
+				_event_variables["bE_sum"] += tmppt;
+				//std::cout << "pt: " << tmppt << std::endl;	
 			} 
 		}
 	} /* end of loop*/
@@ -261,45 +281,34 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	/*This section computes the weighted averages for both the one weighted by ptx(transverse energy/momentum) and pt (energy) in the forward calorimeter*/
 	_event_variables["fX_weighted_pt"] /= _event_variables["fX_sum"];
 	_event_variables["fY_weighted_pt"] /= _event_variables["fY_sum"]; 
+	
 	_event_variables["fd_pos"] = std::sqrt((_event_variables["fX_weighted_pt"] - _event_variables["xnft"])*(_event_variables["fX_weighted_pt"] - _event_variables["xnft"]) + (_event_variables["fY_weighted_pt"] - _event_variables["ynft"])*(_event_variables["fY_weighted_pt"] - _event_variables["ynft"])); 
-    	_event_variables["fX_weighted_Et"] /= _event_variables["fE_sum"];
+    	
+	_event_variables["fX_weighted_Et"] /= _event_variables["fE_sum"];
 	_event_variables["fY_weighted_Et"] /= _event_variables["fE_sum"]; 
+	
 	_event_variables["fd_pos_E"] = std::sqrt((_event_variables["fX_weighted_Et"] - _event_variables["xnft"])*(_event_variables["fX_weighted_Et"] - _event_variables["xnft"]) + (_event_variables["fY_weighted_Et"] - _event_variables["ynft"])*(_event_variables["fY_weighted_Et"] - _event_variables["ynft"])); 
     	
 	//This section does the same for the backwards calorimeter. The pt calculations are not yet included in the backwards calorimeter, and NEED TO BE ADDED.
+	/*
 	_event_variables["bX_weighted_pt"] /= _event_variables["bX_sum"];
 	_event_variables["bY_weighted_pt"] /= _event_variables["bY_sum"]; 
-	_event_variables["bd_pos"] = std::sqrt((_event_variables["bX_weighted_pt"] - _event_variables["xnbt"])*(_event_variables["bX_weighted_pt"] - _event_variables["xnbt"]) + (_event_variables["bY_weighted_pt"] - _event_variables["ynbt"])*(_event_variables["bY_weighted_pt"] - _event_variables["ynbt"]));
-
-
-
-
-
-
-	/* Debug for position Resolution */
-        //std::cout <<  "T: "<<_event_variables["xnbt" ]<< " | "<< _event_variables["ynbt"] << std::endl; 
-	//std::cout << "C: "<< _event_variables["bX_weighted_pt"]<< " | " <<_event_variables["bY_weighted_pt"] << std::endl;
-	//std::cout << _event_variables["bX_sum"]<<std::endl;
-	//std::cout << std::endl;    
-
-
-
-
-}
-
-    
-	/* For loop too slow? */
-	//for (unsigned i=0; i<candidate_events; ++i) {
-		// loop to obtain weighted position
-		//sum_pt_x += _event_details["xnfc"][i]*_event_details["xnfc_pt"][i];
-		//sum_pt_y += _event_details["ynfc"][i]*_event_details["ynfc_pt"][i];
-		//sum_x += _event_details["xnfc"][i];
-		//sum_y += _event_details["ynfc"][i];
-	//}
-	//_event_variables["X_weighted_pt"] = sum_pt_x/sum_x;
-	//_event_variables["Y_weighted_pt"] = sum_pt_y/sum_y;
 	
 
+	_event_variables["bd_pos"] = std::sqrt((_event_variables["bX_weighted_pt"] - _event_variables["xnbt"])*(_event_variables["bX_weighted_pt"] - _event_variables["xnbt"]) + (_event_variables["bY_weighted_pt"] - _event_variables["ynbt"])*(_event_variables["bY_weighted_pt"] - _event_variables["ynbt"]));
+	*/
+	_event_variables["bX_weighted_Et"] /= _event_variables["bE_sum"];
+	_event_variables["bY_weighted_Et"] /= _event_variables["bE_sum"];
+		
+	
+	_event_variables["bd_pos_E"] = std::sqrt((_event_variables["bX_weighted_Et"] - _event_variables["xnbt"])*(_event_variables["bX_weighted_Et"] - _event_variables["xnbt"]) + (_event_variables["bY_weighted_Et"] - _event_variables["ynbt"])*(_event_variables["bY_weighted_Et"] - _event_variables["ynbt"])); 
+
+    /*difference in energy for circle*/
+	_event_variables["fd_energy_R"] = _event_variables["fE_sum"] - gen_pt->at(0);
+	
+	_event_variables["bd_energy_R"] = _event_variables["bE_sum"] - gen_pt->at(1);
+
+}
 
 
 void HGCPlotting::FillAllHists( std::string name ){
@@ -308,7 +317,12 @@ void HGCPlotting::FillAllHists( std::string name ){
 
   CalculateTriggerCellVariables();
 
-
+  double r = 0.04;
+  // Run calcs for radius r about truth values, remember, SINGLE EVENT at a time, saved to _event_variables.
+  // If run multiple times, will currently replace itself for each R
+  CalculateReducedCircle(r); 
+  
+  
   //  if ( name == "PU0" ||  name == "PU200" ){
 
 
@@ -336,7 +350,8 @@ void HGCPlotting::FillAllHists( std::string name ){
     _cloned_hists[ name ] [ "dpos_Y" ] ->Fill(_event_variables["fY_weighted_pt"] - _event_variables["ynft"]);
     _cloned_hists[ name ] [ "dpos_X_E" ] ->Fill(_event_variables["fX_weighted_Et"]- _event_variables["xnft"]);
     _cloned_hists[ name ] [ "dpos_Y_E" ] ->Fill(_event_variables["fY_weighted_Et"] - _event_variables["ynft"]);
-
+    
+	_cloned_hists [ name ] [ "denergy_R"] ->Fill( _event_variables["fb_denergy_R"]);
 
   } else if ( name == "PU0_backward" ){
     _cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
@@ -347,6 +362,7 @@ void HGCPlotting::FillAllHists( std::string name ){
     _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_backward"  ] );                
     _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_backward"] );
     _cloned_hists[ name ] [ "dpos" ] ->Fill( _event_variables["bd_pos"]);
+	_cloned_hists [ name ] [ "denergy_R"] ->Fill( _event_variables["bd_energy_R"]);
 
   }
 }

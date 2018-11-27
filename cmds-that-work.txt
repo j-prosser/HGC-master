@@ -1,3 +1,6 @@
+./FillHistograms --in_directory /home/johannes/host/simple-data/ --out_directory . --max_events 10000
+
+
 ./FillHistograms --in_directory /home/johannes/host/simple-data/ --out_directory ./out3 --max_events 10000
 
 TEST
