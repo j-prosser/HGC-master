@@ -105,7 +105,6 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	//std::cout << tc_zside->size() << " " << tc_layer->size() <<" "<<tc_z->size()<<std::endl;
     /* ENERGY RESOLUTION */
     //Ex and Ey sums
-
 	double exsum_forward = 0;
 	double eysum_forward = 0;
 	double exsum_backward = 0;
@@ -117,6 +116,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 		//FORWARD
 		exsum_forward += tc_pt->at(i)*std::cos(tc_phi->at(i));
 		eysum_forward += tc_pt->at(i)*std::sin(tc_phi->at(i));
+
 		} else {
 		//BACKWARD
 		exsum_backward += tc_pt->at(i)*std::cos(tc_phi->at(i));
@@ -175,10 +175,6 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	//std::cout << "C: "<< _event_variables["bX_weighted_pt"]<< " | " <<_event_variables["bY_weighted_pt"] << std::endl;
 	//std::cout << _event_variables["bX_sum"]<<std::endl;
 	//std::cout << std::endl;    
-
-
-
-
 }
 
 void HGCPlotting::CalculateReducedCircle(const double& R) {
@@ -196,8 +192,8 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 	_event_variables["bY_weighted_pt"] = 0;
 	_event_variables["fY_weighted_Et"] = 0;
 	_event_variables["fX_weighted_Et"] = 0;
-	_event_variables["bX_sum"] =0;
-	_event_variables["bY_sum"] =0; 
+	_event_variables["bX_sum"] = 0;
+	_event_variables["bY_sum"] = 0; 
 	_event_variables["fE_sum"] = 0;
     _event_variables["bE_sum"] = 0; 
 
@@ -252,7 +248,7 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 		} else { /* Backward: IMPLEMENTED sum(pt.x)/sum(pt)*/
 			/*Invert co-ordinates for no good reason*/
 			tmpx = -tmpx; tmpy = -tmpy;
-
+             
 			_event_details["xnb"].push_back(tmpx);
 			_event_details["ynb"].push_back(tmpy);
 			_event_details["ptb"].push_back(tmppt);
@@ -322,7 +318,6 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
     /*difference in energy for circle*/
 	_event_variables["fd_energy_R"] = _event_variables["fE_sum"] - gen_pt->at(0);
 	_event_variables["bd_energy_R"] = _event_variables["bE_sum"] - gen_pt->at(1);
-
 }
 
 
