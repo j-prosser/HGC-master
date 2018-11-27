@@ -161,7 +161,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	_event_variables["denergy_forward"] = ersum_forward - gen_pt->at(0);
 	_event_variables["denergy_backward"] = ersum_backward - gen_pt->at(1);
 
-	/*TRUTH VALUES*/
+	/*TRUTH VALUES*/ cout << "k";
 	// in our normalised co-ordinates  
 	_event_variables["xnft"] = std::cos(gen_phi->at(0)) / sinh(gen_eta->at(0));  //std::sin(2 * std::atan2(std::exp( -gen_eta->at(0) ),1. ) ) * std::cos(gen_phi->at(0));
 	_event_variables["ynft"] = std::sin(gen_phi->at(0)) / sinh(gen_eta->at(0));  //std::sin(2 * std::atan2(std::exp( -gen_eta->at(0) ),1. ) ) * std::sin(gen_phi->at(0));
