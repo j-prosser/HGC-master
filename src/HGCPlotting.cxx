@@ -22,12 +22,12 @@ HGCPlotting::HGCPlotting( CmdLine * cmd ){
   // ANYTHING ADDED TO _HistoSets will create a histogram, if defined in src/Histogramming.cxx, 
   // where "NAME" is the argument checked for in Histogramming
 
-  _HistoSets.push_back( "PU0_General" );
+//  _HistoSets.push_back( "PU0_General" );
   _HistoSets.push_back( "PU0_forward" );
   _HistoSets.push_back( "PU0_backward" );
 
   //yoyo
-  _HistoSets.push_back( "TriggerCells" );
+//  _HistoSets.push_back( "TriggerCells" );
   //_HistoSets.push_back( "" );
 
 }
@@ -139,7 +139,6 @@ void HGCPlotting::Loop( ){
     }
     for (auto& names : _HistoSets ){
 	  //std::cout << "TESTING1 "<< names << std::endl;
-
       FillAllHists( names );
     }
 	if (jentry==0) {
@@ -158,31 +157,31 @@ void HGCPlotting::Loop( ){
 	
 		std::cout << "PLOTTING EVENT 0" << std::endl;		
 
-		auto x_lims = std::minmax_element (_event_details["xnf"].begin(), _event_details["xnf"].end());	
-		auto y_lims = std::minmax_element (_event_details["ynf"].begin(), _event_details["ynf"].end());
+//		auto x_lims = std::minmax_element (_event_details["xnf"].begin(), _event_details["xnf"].end());	
+//		auto y_lims = std::minmax_element (_event_details["ynf"].begin(), _event_details["ynf"].end());
         
         std::cout << "size of entire event " << _event_details["xnf"].size() <<std::endl; 		
 		
         //std::cout << "x lims: " << *x_lims.first << " "<< *x_lims.second << std::endl; 
 
-	    _2d_plots["test_plot"] = new TH2D ("normalised_coord", "",500,*x_lims.first,*x_lims.second,100,*y_lims.first,*y_lims.second);
+//	    _2d_plots["test_plot"] = new TH2D ("normalised_coord", "",500,*x_lims.first,*x_lims.second,100,*y_lims.first,*y_lims.second);
 		//_2d_plots["test_plot"]->Fill(_event_details["xnf"],_event_details["ynf"],_event_details["ptf"]);
 		//_2d_plots["test_plot"]->Draw("COLZ");	
-		for (unsigned i =0; i < _event_details["ptf"].size(); ++i) {
-			_2d_plots["test_plot"]->Fill(_event_details["xnf"][i], _event_details["ynf"][i], _event_details["ptf"][i]);	
-		}
+//		for (unsigned i =0; i < _event_details["ptf"].size(); ++i) {
+//			_2d_plots["test_plot"]->Fill(_event_details["xnf"][i], _event_details["ynf"][i], _event_details["ptf"][i]);	
+//		}
 		//_2d_plots["test_plot"]->Draw("COLZ");
 		// other plot
-		auto xlc = std::minmax_element(_event_details["xnfc"].begin(),_event_details["xnfc"].end());
-        auto ylc = std::minmax_element(_event_details["ynfc"].begin(),_event_details["ynfc"].end());
-		_2d_plots["cand_plot"] = new TH2D ("normalised_coord_cand_cirlce_0.05", "", 100,*xlc.first,*xlc.second,100,*ylc.first,*ylc.second);
+//		auto xlc = std::minmax_element(_event_details["xnfc"].begin(),_event_details["xnfc"].end());
+//        auto ylc = std::minmax_element(_event_details["ynfc"].begin(),_event_details["ynfc"].end());
+//		_2d_plots["cand_plot"] = new TH2D ("normalised_coord_cand_cirlce_0.05", "", 100,*xlc.first,*xlc.second,100,*ylc.first,*ylc.second);
 		
 		std::cout <<"size of event with circle "<< _event_details["xnfc"].size()<< std::endl;
 		
-		//_2d_plots["cand_plot"] = new TH2D ("normalised_coord_cand_cirlce_0.05", "", 100,-1,1,100,-1,1);
-		for (unsigned i=0; i<_event_details["ptfc"].size(); ++i) {
-			_2d_plots["cand_plot"]->Fill(_event_details["xnfc"][i],_event_details["ynfc"][i]);
-		}	
+//		_2d_plots["cand_plot"] = new TH2D ("normalised_coord_cand_cirlce_0.05", "", 100,-1,1,100,-1,1);
+//		for (unsigned i=0; i<_event_details["ptfc"].size(); ++i) {
+//			_2d_plots["cand_plot"]->Fill(_event_details["xnfc"][i],_event_details["ynfc"][i]);
+//		}	
 	}
   }
 

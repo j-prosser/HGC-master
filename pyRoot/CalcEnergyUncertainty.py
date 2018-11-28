@@ -9,7 +9,7 @@ Histogramm_List = []
 radii_list = []
 for element in list_of_keys:
 		Histogramm_List.append(input_file.Get(element.GetName()))
-		radii_list.append(element.GetName()[-4:])
+		radii_list.append(element.GetName()[-5:])
 
 #Creates an array of the rms and mean data of all the objects
 list_of_rms_mean_touples = []
@@ -20,8 +20,9 @@ for element in Histogramm_List:
 def rms_over_mean(rms_mean_touple):
 		if rms_mean_touple[1] == 0:
 				result = 0
+				print(rms_mean_touple)
 		else:
-				result = rms_mean_touple[0] / rms_mean_touple[1]
+				result = abs(rms_mean_touple[0] / rms_mean_touple[1])
 		return result
 #saves all the histograms, uncomment if necessary
 '''
@@ -34,16 +35,22 @@ for element in Histogramm_List:
 #plots a graph of the uncertainty in the energy over the energy. 
 rms_over_mean_array = [rms_over_mean(rms_mean_touple) for rms_mean_touple in list_of_rms_mean_touples]
 #comment out next 2 lines once files follow naming convention.
-radii_listPlaceholder = range(len(radii_list))
-plt.scatter(radii_listPlaceholder, rms_over_mean_array)
+#radii_listPlaceholder = range(len(radii_list))
+#plt.scatter(radii_listPlaceholder, rms_over_mean_array)
 
 
 #uncomment next 2 lines once files follow naming convention
-#plt.scatter(radii_list, rms_over_mean_array)
-#radii_list = [float(radius_string) for radius_string in radii_list]
+radii_list = [float(radius_string) for radius_string in radii_list]
+radii_list_forwards = radii_list[:len(radii_list)/2]
+radii_list_backwards = radii_list[len(radii_list)/2:]
+rms_over_mean_array_forwards = rms_over_mean_array[:len(rms_over_mean_array)/2]
+rms_over_mean_array_backwards = rms_over_mean_array[len(rms_over_mean_array)/2:]
+plt.scatter(radii_list_forwards, rms_over_mean_array_forwards, color="blue")
+plt.scatter(radii_list_backwards, rms_over_mean_array_backwards, color="red")
 
-plt.ylim(min(rms_over_mean_array), max(rms_over_mean_array))
-plt.xlim(0, max(radii_listPlaceholder))
+
+plt.ylim(0, 2)
+plt.xlim(0, max(radii_list))
 plt.title("Sigma_E/E for various R")
 plt.xlabel("radius (cm)")
 plt.ylabel("Sigma_E/E")

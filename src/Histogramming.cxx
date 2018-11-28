@@ -1,63 +1,87 @@
 
 #include "HGCPlotting.h"
 #include <cmath> 
+
+
+//Creates List of radii over which the program can run
+const int NumberOfEntries = 40;
+double LowLimit = 0;
+double HighLimit = 0.08;
+double RadiiList [NumberOfEntries] = {};
+
+
 void HGCPlotting::MakeAllHists( std::vector<std::string> &HistoSets){
 
-  std::cout << "Creating All Histograms" << std::endl;
-  
-  for (auto& names : HistoSets ){
-    LoadHistoTemplates ( names );
-  }  
+	std::cout << "Creating All Histograms" << std::endl;
+
+	for (auto& names : HistoSets ){
+            LoadHistoTemplates ( names );
+    }  
 
 }
 
+	
 
 // TH1D Syntax: new TH1D(name, title, nbinsx, xlow, xhigh) ; xlow-> edge of lowest bin, xhigh -> edge of highest bin
 // or: new TH1D(name, title, nbinsx, xbins) ; xbins -> low edge of of everybin, contains nbinsx+1 entries. 
 
-void HGCPlotting::LoadHistoTemplates( std::string name ){
+void HGCPlotting::LoadHistoTemplates( std::string name ) { 
   /* Initialise all empty plots */
+for (unsigned j=0; j < NumberOfEntries; j++){
+	double Value = round((LowLimit + j*(HighLimit-LowLimit)/NumberOfEntries)*1000)/1000 ;
+	RadiiList[j] = Value;
+}
   if ( name == "TriggerCells" ){
 
     _cloned_hists[ name ] [ "tc_eta" ] = new TH1D ( (name + "_tc_eta").c_str(), "", 100,-5,5 );  
     _cloned_hists[ name ] [ "tc_phi" ] = new TH1D ( (name + "_tc_phi").c_str(), "", 100,-M_PI,M_PI );  // M_PI == Pi 
 
-  } else if ( name == "PU0_General" ){
-
-    _cloned_hists[ name ] [ "tc_n" ] = new TH1D ( (name + "_tc_n").c_str(), "", 100,0,1000 );  
-
-  } else if ( name == "PU200" ){
-
-    _cloned_hists[ name ] [ "tc_n" ] = new TH1D ( "default_tc_n", "", 100,0,100000 );  
-    _cloned_hists[ name ] [ "ex_sum" ] = new TH1D ( "default_ex_sum", "", 150,-150,150);
-    _cloned_hists[ name ] [ "ey_sum" ] = new TH1D ( "default_ey_sum", "", 150,-150,150);
-    _cloned_hists[ name ] [ "er_sum" ] = new TH1D ( "default_er_sum", "", 150,0,150);
-    _cloned_hists[ name ] [ "ephi_sum" ] = new TH1D ( "default_ephi_sum", "", 150,-M_PI,M_PI);
-  
-  } else if ( name == "PU0_forward" || name == "PU0_backward" ){
-
-    _cloned_hists[ name ] [ "tc_n" ] = new TH1D ( (name + "_tc_n").c_str(), "", 100,0,1000 );  
-    _cloned_hists[ name ] [ "ex_sum" ] = new TH1D ( (name + "_ex_sum").c_str(), "", 150,-50,50);
-    _cloned_hists[ name ] [ "ey_sum" ] = new TH1D ( (name + "_ey_sum").c_str(), "", 150,-50,50);
-    _cloned_hists[ name ] [ "er_sum" ] = new TH1D ( (name + "_er_sum").c_str(), "", 150,0,30); // CHANGED 2->30, edge of last bin...
-    _cloned_hists[ name ] [ "ephi_sum" ] = new TH1D ( (name + "_ephi_sum").c_str(), "", 150,-M_PI,M_PI);// energy sum over all phi (-pi to pi)
-    _cloned_hists[ name ] [ "dphi_met" ] = new TH1D ( (name + "_dphi_met").c_str(), "", 150,-0.05,0.05);// delta Phi, difference between phi
-    _cloned_hists[ name ] [ "denergy" ] = new TH1D ( (name + "_denergy").c_str(), "", 150, -5.0,5.0); // difference in energy  
-    _cloned_hists[ name ] [ "dpos" ] = new TH1D ( (name + "_dpos").c_str(), "", 150, 0,.1);
-    _cloned_hists[ name ] [ "dpos_2" ] = new TH1D ( (name + "_dpos_E").c_str(), "", 150, 0,.1);
-    _cloned_hists[ name ] [ "dpos_X" ] = new TH1D ( (name + "_dpos_x").c_str(), "", 150, -.04,.04);
-    _cloned_hists[ name ] [ "dpos_Y" ] = new TH1D ( (name + "_dpos_y").c_str(), "", 150, -.04,.04);
-    _cloned_hists[ name ] [ "dpos_X_E" ] = new TH1D ( (name + "_dpos_x_E").c_str(), "", 150, -.04,.04);
-    _cloned_hists[ name ] [ "dpos_Y_E" ] = new TH1D ( (name + "_dpos_y_E").c_str(), "", 150, -.04,.04);
-    
-	_cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);
-
-
-	//
-	
-  } //else if (name="single_event") {
-	  //_clone_2d_map[ name ] [ "scatter_norm" ] = new TH2D ((name+"_scatter_norm").c_str(), ) //scatter in normalised co-ordinates
-}
+  }/*else if ( name == "PU0_General" ){
+		  
+				      _cloned_hists[ name ] [ "tc_n" ] = new TH1D ( (name + "_tc_n").c_str(), "", 100,0,1000 );  
+		  
+				  } else if ( name == "PU200" ){
+						  
+								      _cloned_hists[ name ] [ "tc_n" ] = new TH1D ( "default_tc_n", "", 100,0,100000 );  
+						      _cloned_hists[ name ] [ "ex_sum" ] = new TH1D ( "default_ex_sum", "", 150,-150,150);
+						      _cloned_hists[ name ] [ "ey_sum" ] = new TH1D ( "default_ey_sum", "", 150,-150,150);
+						      _cloned_hists[ name ] [ "er_sum" ] = new TH1D ( "default_er_sum", "", 150,0,150);
+						      _cloned_hists[ name ] [ "ephi_sum" ] = new TH1D ( "default_ephi_sum", "", 150,-M_PI,M_PI);
+						    
+								     } else if ( name == "PU0_forward" || name == "PU0_backward" ){
+											 
+													     _cloned_hists[ name ] [ "tc_n" ] = new TH1D ( (name + "_tc_n").c_str(), "", 100,0,1000 );  
+											     _cloned_hists[ name ] [ "ex_sum" ] = new TH1D ( (name + "_ex_sum").c_str(), "", 150,-50,50);
+											     _cloned_hists[ name ] [ "ey_sum" ] = new TH1D ( (name + "_ey_sum").c_str(), "", 150,-50,50);
+											     _cloned_hists[ name ] [ "er_sum" ] = new TH1D ( (name + "_er_sum").c_str(), "", 150,0,30); // CHANGED 2->30, edge of last bin...
+											     _cloned_hists[ name ] [ "ephi_sum" ] = new TH1D ( (name + "_ephi_sum").c_str(), "", 150,-M_PI,M_PI);// energy sum over all phi (-pi to pi)
+											     _cloned_hists[ name ] [ "dphi_met" ] = new TH1D ( (name + "_dphi_met").c_str(), "", 150,-0.05,0.05);// delta Phi, difference between phi
+											     _cloned_hists[ name ] [ "denergy" ] = new TH1D ( (name + "_denergy").c_str(), "", 150, -5.0,5.0); // difference in energy  
+											     _cloned_hists[ name ] [ "dpos" ] = new TH1D ( (name + "_dpos").c_str(), "", 150, 0,.1);
+											     _cloned_hists[ name ] [ "dpos_2" ] = new TH1D ( (name + "_dpos_E").c_str(), "", 150, 0,.1);
+											     _cloned_hists[ name ] [ "dpos_X" ] = new TH1D ( (name + "_dpos_x").c_str(), "", 150, -.04,.04);
+											     _cloned_hists[ name ] [ "dpos_Y" ] = new TH1D ( (name + "_dpos_y").c_str(), "", 150, -.04,.04);
+											     _cloned_hists[ name ] [ "dpos_X_E" ] = new TH1D ( (name + "_dpos_x_E").c_str(), "", 150, -.04,.04);
+											     _cloned_hists[ name ] [ "dpos_Y_E" ] = new TH1D ( (name + "_dpos_y_E").c_str(), "", 150, -.04,.04);
+											     
+													        _cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);
+											
+													
+													       //
+													        
+													   } //else if (name="single_event") {
+													          //_clone_2d_map[ name ] [ "scatter_norm" ] = new TH2D ((name+"_scatter_norm").c_str(), ) //scatter in normalised co-ordinates
+													 }*/
+	else if ( name == "PU0_forward" || name == "PU0_backward" ){
+		for (int j=0; j < NumberOfEntries; j++) {
+			char o[50];
+			sprintf(o, "%f", RadiiList[j]);
+			o[5] = '\0';
+			std::string p = o;
+			std::string HistName  = "_denergy_R_" + p;
+			_cloned_hists[ name] [ HistName  ] = new TH1D ( (name+HistName).c_str(), "", 150, -10,10);
+		}
+  } }
 
 
 /* POSITION RESOLUTION */
@@ -89,16 +113,6 @@ void HGCPlotting::LoadHistoTemplates( std::string name ){
   // 		   	
   // 	 	Also E_X = E_C sin(theta_c) cos(phi_c) // Projection onto C coordinate
   
-
-  // TODO: DEADLINE: THURSDAY!
-  // 	Implement similar to above:
-  // 		- Draw a circle of R ~ 0.3 around the TRUTH VALUES, get list of TCs enclosed
-  //		- Obtain the centre of this 'cluster' using <E(x)> = SUM(e(x)x) / sum(x) ; where x is distance etc etc
-  //		HENCE:
-  //			- Implement a plotting method/function to visualise truth and normalised co-ordinates (X,Y)
-  //			- plot circle on it 
-  //
-  //
 
 
 void HGCPlotting::CalculateTriggerCellVariables() {
@@ -232,15 +246,7 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 				_event_details["xnfc"].push_back( tmpx );
 				_event_details["ynfc"].push_back( tmpy );
 				_event_details["ptfc"].push_back( tmppt );
-				//_event_details["ptfxc"].push_back( tmpptx );
-				//_event_details["ptfyc"].push_back( tmppty );
-        
-				/*Add position resolution calculations here to form sum of pt.x */
-				//_event_variables["fX_weighted_pt"] += tmpx*tmpptx;  //tmppt*std::cos(tmpphi);
-				//_event_variables["fY_weighted_pt"] += tmpy*tmppty;//tmppt*std::sin(tmpphi);
-				//_event_variables["fX_sum"] +=tmpptx;
-				//_event_variables["fY_sum"] +=tmppty;
-				_event_variables["fE_sum"] +=tmppt;
+		  		_event_variables["fE_sum"] +=tmppt;
 				_event_variables["fX_weighted_Et"] += tmpx*tmppt;
 				_event_variables["fY_weighted_Et"] += tmpy*tmppt;
 			}
@@ -265,7 +271,15 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 				_event_details["ptbc"].push_back(tmppt);
 				//_event_details["xnbc_pt"].push_back( tmppt*std::cos(tmpphi));
 				//_event_details["ynbc_pt"].push_back( tmppt*std::sin(tmpphi));
-        
+                //_event_details["ptfxc"].push_back( tmpptx );
+	            //_event_details["ptfyc"].push_back( tmppty );
+	         
+                //_event_variables["fX_weighted_pt"] += tmpx*tmpptx;  //tmppt*std::cos(tmpphi);
+                //_event_variables["fY_weighted_pt"] += tmpy*tmppty;//tmppt*std::sin(tmpphi);
+                //_event_variables["fX_sum"] +=tmpptx;
+                //_event_variables["fY_sum"] +=tmppty;
+                _event_variables["fE_sum"] +=tmppt;
+
 				/*Add position resolution calculations here to form sum of pt.x */
 				_event_variables["bX_weighted_Et"] += tmppt*tmpx;
 				_event_variables["bY_weighted_Et"] += tmppt*tmpy;
@@ -278,15 +292,20 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 			} 
 		}
 	} /* end of loop*/
-   
 	/*This section computes the weighted averages for both the one weighted by ptx(transverse energy/momentum) in the forward calorimeter*/
 	/*
 	_event_variables["fX_weighted_pt"] /= _event_variables["fX_sum"];
-	_event_variables["fY_weighted_pt"] /= _event_variables["fY_sum"]; 
-	
-	_event_variables["fd_pos"] = std::sqrt((_event_variables["fX_weighted_pt"] - _event_variables["xnft"])*(_event_variables["fX_weighted_pt"] - _event_variables["xnft"]) + (_event_variables["fY_weighted_pt"] - _event_variables["ynft"])*(_event_variables["fY_weighted_pt"] - _event_variables["ynft"])); 
-    */
+    _event_variables["fY_weighted_pt"] /= _event_variables["fY_sum"]; 
+    _event_variables["fd_pos"] = std::sqrt((_event_variables["fX_weighted_pt"] - _event_variables["xnft"])*(_event_variables["fX_weighted_pt"] - _event_va
+	*/
 
+	//This section does the same for the backwards calorimeter. The pt calculations are not yet included in the backwards calorimeter, and NEED TO BE ADDE
+	/*
+	_event_variables["bX_weighted_pt"] /= _event_variables["bX_sum"];
+	_event_variables["bY_weighted_pt"] /= _event_variables["bY_sum"]; 
+	_event_variables["bd_pos"] = std::sqrt((_event_variables["bX_weighted_pt"] - _event_variables["xnbt"])*(_event_variables["bX_weighted_pt"] - _event_va
+	*/
+   
 	/* Forward Calorimeter XY-position resolution weighted by energy*/
 	_event_variables["fX_weighted_Et"] /= _event_variables["fE_sum"];
 	_event_variables["fY_weighted_Et"] /= _event_variables["fE_sum"]; 	
@@ -297,14 +316,6 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 			+ (_event_variables["fY_weighted_Et"] - _event_variables["ynft"])
 			*(_event_variables["fY_weighted_Et"] - _event_variables["ynft"]) ); 
     	
-	//This section does the same for the backwards calorimeter. The pt calculations are not yet included in the backwards calorimeter, and NEED TO BE ADDED.
-	/*
-	_event_variables["bX_weighted_pt"] /= _event_variables["bX_sum"];
-	_event_variables["bY_weighted_pt"] /= _event_variables["bY_sum"]; 
-	
-	_event_variables["bd_pos"] = std::sqrt((_event_variables["bX_weighted_pt"] - _event_variables["xnbt"])*(_event_variables["bX_weighted_pt"] - _event_variables["xnbt"]) + (_event_variables["bY_weighted_pt"] - _event_variables["ynbt"])*(_event_variables["bY_weighted_pt"] - _event_variables["ynbt"]));
-	*/
-
 	/* Backward Calorimeter XY-position resolution weighted by energy*/
 	_event_variables["bX_weighted_Et"] /= _event_variables["bE_sum"];
 	_event_variables["bY_weighted_Et"] /= _event_variables["bE_sum"];
@@ -331,9 +342,8 @@ void HGCPlotting::FillAllHists( std::string name ){
   // Run calcs for radius r about truth values, remember, SINGLE EVENT at a time, saved to _event_variables.
   // If run multiple times, will currently replace itself for each R
   CalculateReducedCircle(r); 
-  
   //CalculateReducedCircle(r-0.02);  
-  //  if ( name == "PU0" ||  name == "PU200" ){
+  //  if ( name == "PU0" ||  name == "PU200" )
 
 
   if ( name == "TriggerCells" ){
@@ -344,35 +354,54 @@ void HGCPlotting::FillAllHists( std::string name ){
       _cloned_hists[ name ] [ "tc_phi" ] ->Fill ( tc_phi->at(i) );
     }
   } else if ( name == "PU0_General" ){
-    _cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
+    	_cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
   } else if ( name == "PU0_forward" ){
-    _cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_forward"  ] );
-    _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_forward"  ] );
-    _cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_forward"  ] );
-    //std::cout << _event_variables["er_sum_forward"] << std::endl;//yoyo-db  
-    _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_forward"  ] );        
-    _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_forward"  ] );    
-    _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_forward"] );
-	// POSITION RES. FILLED HERE
-    _cloned_hists[ name ] [ "dpos_2" ] ->Fill(_event_variables["fd_pos_E"]);
-    _cloned_hists[ name ] [ "dpos" ] ->Fill(_event_variables["fd_pos"]);
-    _cloned_hists[ name ] [ "dpos_X" ] ->Fill(_event_variables["fX_weighted_pt"]- _event_variables["xnft"]);
-    _cloned_hists[ name ] [ "dpos_Y" ] ->Fill(_event_variables["fY_weighted_pt"] - _event_variables["ynft"]);
-    _cloned_hists[ name ] [ "dpos_X_E" ] ->Fill(_event_variables["fX_weighted_Et"]- _event_variables["xnft"]);
-    _cloned_hists[ name ] [ "dpos_Y_E" ] ->Fill(_event_variables["fY_weighted_Et"] - _event_variables["ynft"]);
-    
-	_cloned_hists [ name ] [ "denergy_R"] ->Fill( _event_variables["fb_denergy_R"]);
+		for (int j=0; j<NumberOfEntries; j++) {
+			CalculateReducedCircle(RadiiList[j]); 
+			char o[50];
+			sprintf(o, "%f", RadiiList[j]);
+			o[5] = '\0';
+			std::string p = o;
+			std::string HistName  = "_denergy_R_" + p;
+			_cloned_hists[ name] [ HistName  ] ->Fill( _event_variables["fd_energy_R"]);
+
+		}
+		//     _cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_forward"  ] );
+		//     _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_forward"  ] );
+		//     _cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_forward"  ] );
+		//     //std::cout << _event_variables["er_sum_forward"] << std::endl;//yoyo-db  
+		//     _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_forward"  ] );        
+		//     _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_forward"  ] );    
+		//     _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_forward"] );
+		//        // POSITION RES. FILLED HERE
+		//     _cloned_hists[ name ] [ "dpos_2" ] ->Fill(_event_variables["fd_pos_E"]);
+		//     _cloned_hists[ name ] [ "dpos" ] ->Fill(_event_variables["fd_pos"]);
+		//     _cloned_hists[ name ] [ "dpos_X" ] ->Fill(_event_variables["fX_weighted_pt"]- _event_variables["xnft"]);
+		//     _cloned_hists[ name ] [ "dpos_Y" ] ->Fill(_event_variables["fY_weighted_pt"] - _event_variables["ynft"]);
+		//     _cloned_hists[ name ] [ "dpos_X_E" ] ->Fill(_event_variables["fX_weighted_Et"]- _event_variables["xnft"]);
+		//     _cloned_hists[ name ] [ "dpos_Y_E" ] ->Fill(_event_variables["fY_weighted_Et"] - _event_variables["yn
+
+
 
   } else if ( name == "PU0_backward" ){
-    _cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
-    _cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_backward"  ] );
-    _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_backward"  ] );
-    _cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_backward"  ] );
-    _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_backward"  ] );   
-    _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_backward"  ] );                
-    _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_backward"] );
-    _cloned_hists[ name ] [ "dpos" ] ->Fill( _event_variables["bd_pos"]);
-    _cloned_hists [ name ] [ "denergy_R"] ->Fill( _event_variables["bd_energy_R"]);
+		for (int j=0; j<NumberOfEntries; j++) {
+			CalculateReducedCircle(RadiiList[j]); 
+			char o[50];
+			sprintf(o, "%f", RadiiList[j]);
+			o[5] = '\0';
+			std::string p = o;
+			std::string HistName  = "_denergy_R_" + p;
+			_cloned_hists[ name] [ HistName  ] ->Fill( _event_variables["bd_energy_R"]);
+
+		}
+		//    _cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
+		//    _cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_backward"  ] );
+		//    _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_backward"  ] );
+		//    _cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_backward"  ] );
+		//    _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_backward"  ] );   
+		//    _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_backward"  ] );                
+		//    _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_backward"] );
+		//    _cloned_hists[ name ] [ "dpos" ] ->Fill( _event_variables["bd_pos"])
 
 
   }
