@@ -4,9 +4,9 @@
 
 
 //Creates List of radii over which the program can run
-const int NumberOfEntries = 40;
+const int NumberOfEntries = 100;
 double LowLimit = 0;
-double HighLimit = 0.08;
+double HighLimit = 0.06;
 double RadiiList [NumberOfEntries] = {};
 
 
@@ -79,7 +79,7 @@ for (unsigned j=0; j < NumberOfEntries; j++){
 			o[5] = '\0';
 			std::string p = o;
 			std::string HistName  = "_denergy_R_" + p;
-			_cloned_hists[ name] [ HistName  ] = new TH1D ( (name+HistName).c_str(), "", 150, -10,10);
+			_cloned_hists[ name] [ HistName  ] = new TH1D ( (name+HistName).c_str(), "", 300, 0,88);
 		}
   } }
 
@@ -327,8 +327,8 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 			*(_event_variables["bY_weighted_Et"] - _event_variables["ynbt"]) ); 
 
     /*difference in energy for circle*/
-	_event_variables["fd_energy_R"] = _event_variables["fE_sum"] - gen_pt->at(0);
-	_event_variables["bd_energy_R"] = _event_variables["bE_sum"] - gen_pt->at(1);
+	_event_variables["fd_energy_R"] = _event_variables["fE_sum"]; //- gen_pt->at(0);
+	_event_variables["bd_energy_R"] = _event_variables["bE_sum"]; //- gen_pt->at(1);
 }
 
 

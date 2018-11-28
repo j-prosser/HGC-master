@@ -20,7 +20,6 @@ for element in Histogramm_List:
 def rms_over_mean(rms_mean_touple):
 		if rms_mean_touple[1] == 0:
 				result = 0
-				print(rms_mean_touple)
 		else:
 				result = abs(rms_mean_touple[0] / rms_mean_touple[1])
 		return result
@@ -34,12 +33,6 @@ for element in Histogramm_List:
 
 #plots a graph of the uncertainty in the energy over the energy. 
 rms_over_mean_array = [rms_over_mean(rms_mean_touple) for rms_mean_touple in list_of_rms_mean_touples]
-#comment out next 2 lines once files follow naming convention.
-#radii_listPlaceholder = range(len(radii_list))
-#plt.scatter(radii_listPlaceholder, rms_over_mean_array)
-
-
-#uncomment next 2 lines once files follow naming convention
 radii_list = [float(radius_string) for radius_string in radii_list]
 radii_list_forwards = radii_list[:len(radii_list)/2]
 radii_list_backwards = radii_list[len(radii_list)/2:]
@@ -55,3 +48,4 @@ plt.title("Sigma_E/E for various R")
 plt.xlabel("radius (cm)")
 plt.ylabel("Sigma_E/E")
 plt.show()
+plt.savefig("rms/mean for energy vs radius.png")
