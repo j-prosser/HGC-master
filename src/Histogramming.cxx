@@ -120,6 +120,12 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 		//BACKWARD
 		exsum_backward += tc_pt->at(i)*std::cos(tc_phi->at(i));
 		eysum_backward += tc_pt->at(i)*std::sin(tc_phi->at(i));
+		
+		//
+		_event_details["bX"].push_back( tc_x->at(i) / tc_z->at(i) );
+		_event_details["bY"].push_back( tc_y->at(i) / tc_z->at(i) );
+		_event_details["bP"].push_back( tc_pt->at(i) );
+
 		}
 	}
 
@@ -321,7 +327,7 @@ struct inCircle {
 	inCircle(const double& R, const double& XT, const double& YT): _R(R), _XT(XT), _YT(YT) {}
 	bool operator()(const entry& E) const {
 		// Comparision here
-		return (((E.x-_XT)*(E.x-_XT)+(E.y-_YT)*(E.y-_YT)) >  _R*_R) ; 
+		return ( ((E.x-_XT)*(E.x-_XT) + (E.y-_YT)*(E.y-_YT)) > _R*_R ); 
 	}
 }; 
 
@@ -344,23 +350,100 @@ void Candidate::crop(const double& R) {
 	//std::cout << "Croped size: " << _Entries.size() << "\n"; 
 } 
 
+void Candidate::calculate_resolutions() {
+	/*Calculate the e_res, x_res, y_res, e_sum*/
+
+	// Initialise result doubles to zero.
+	e_res =0; x_res=0; y_res=0; r_res=0; e_sum=0;
+
+	for(auto const& e: _Entries) {
+		// Loop over all candidate entries
+		
+		// sum energy
+		e_sum += e.p;
+		
+		// sum weighted position
+		x_res += e.p*e.x;
+		y_res += e.p*e.y;
+
+	}
+	// Divide by weights to obtain weighted average
+	x_res /= e_sum; y_res /= e_sum;
+
+
+	// Subtract the TRUTH values to obtain resolution for single event
+	x_res -= _XT;
+	y_res -= _YT;
+	e_res -= _ET;
+
+	r_res = std::sqrt(x_res*x_res + y_res*y_res);
+}
+
+double Candidate::getERes() { return e_res;} 
+double Candidate::getXRes() { return x_res;}
+double Candidate::getYRes() { return y_res;}
+double Candidate::getRRes() { return r_res;}
+double Candidate::getESum() { return e_sum;} 
+
 void HGCPlotting::FillAllHists( std::string name ){
   /* RUN FOR EVERY __name__ IN EVERY EVENT*/
 
   CalculateTriggerCellVariables();
 
-  double r = 0.04;
+  //double r = 0.04;
   // Run calcs for radius r about truth values, remember, SINGLE EVENT at a time, saved to _event_variables.
   // If run multiple times, will currently replace itself for each R
-  CalculateReducedCircle(r); 
-  
-
+  //CalculateReducedCircle(r); 
+ 
+  /*
+  std::cout << _event_variables["fX_weighted_Et"]-_event_variables["xnft"] << "\t";
   // Get the data into the required form
 
   // Initialise Candidate instance 
   Candidate fCand(_event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0));
   fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
   fCand.crop(r);  
+  
+  fCand.calculate_resolutions();	
+
+  std::cout << fCand.getXRes() << "\n";
+  std::cout << _event_variables["fd_energy_R"] << "\t";
+  std::cout << fCand.getESum() << "\n \n";
+ 
+  Candidate bCand(_event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(0));
+  bCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
+  bCand.crop(r);
+  */
+ 
+
+  
+  std::pair<double,double> r_lims(0.1, 0.01); 
+  unsigned r_num = 10;
+  double r_curr;
+  double r_inc = (r_lims.first/r_lims.second)/r_num; 
+
+  std::map<unsigned, std::vector<double>> data_r;  // r : vector<E_sum>/<>
+
+  for (unsigned i = 0; i < r_num ;++i ) {
+	  // Initialise with vars
+	  Candidate fCand(_event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
+	  Candidate bCand(_event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(0));
+	  // Import event details (readout)
+	  fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
+	  fCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
+
+	  // 
+	  fCand.crop(r_curr); fCand.crop(r_curr);
+	  // Now we can get the data that we want 	  
+       
+
+	  data_r[i].push_back(fCand.getERes());
+	  //bCand.getERes(); 
+
+	  // Increment loop (important!)
+	  r_curr += r_inc;
+  }
+
 
   /*TODO 
    *	Implement methods for:
@@ -369,7 +452,26 @@ void HGCPlotting::FillAllHists( std::string name ){
    * */
 
 
-  //CalculateReducedCircle(r-0.02);  
+  // Implement Scheme to loop over varying R, 
+  /*
+	unsigned r_num = 10;
+	pair<double,double> r_range;
+	double r_curr;
+	r_range.first = 0.1;
+	r_range.second = 0.01;	
+	r_curr = r_range.first;
+	for (unsigned i=0; i < r_num;i++) {
+
+		r_curr -= (r_range.first - r_range.second)/r_num ;
+		
+		// create candidates for f/b; 
+		// calculate res
+		// store res for specified r_check 
+
+		}
+   */
+
+    
   //  if ( name == "PU0" ||  name == "PU200" )
 
   if ( name == "TriggerCells" ){
@@ -395,6 +497,7 @@ void HGCPlotting::FillAllHists( std::string name ){
 		}
 		*/
 
+			// Histograms for entire event, sums over all TCs
 		     _cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_forward"  ] );
 		     _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_forward"  ] );
 		     _cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_forward"  ] );
@@ -402,12 +505,14 @@ void HGCPlotting::FillAllHists( std::string name ){
 		     _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_forward"  ] );        
 		     _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_forward"  ] );    
 		     _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_forward"] );
-		        // POSITION RES. FILLED HERE
-		     _cloned_hists[ name ] [ "dpos_2" ] ->Fill(_event_variables["fd_pos_E"]);
-		     _cloned_hists[ name ] [ "dpos" ] ->Fill(_event_variables["fd_pos"]);
-		     _cloned_hists[ name ] [ "dpos_X" ] ->Fill(_event_variables["fX_weighted_pt"]- _event_variables["xnft"]);
-		     _cloned_hists[ name ] [ "dpos_Y" ] ->Fill(_event_variables["fY_weighted_pt"] - _event_variables["ynft"]);
-		     _cloned_hists[ name ] [ "dpos_X_E" ] ->Fill(_event_variables["fX_weighted_Et"]- _event_variables["xnft"]);
+		        
+			 // Radius specific histograms, position, energy resolutions
+			 _cloned_hists[ name ] [ "dpos_2" ] ->Fill(_event_variables["fd_pos_E"]);
+			 //_cloned_hists[ name ] [ "dpos" ] ->Fill(_event_variables["fd_pos"]);
+			 // Redacted momentum weight
+			 //_cloned_hists[ name ] [ "dpos_X" ] ->Fill(_event_variables["fX_weighted_pt"]- _event_variables["xnft"]);
+		     //_cloned_hists[ name ] [ "dpos_Y" ] ->Fill(_event_variables["fY_weighted_pt"] - _event_variables["ynft"]);
+			 _cloned_hists[ name ] [ "dpos_X_E" ] ->Fill(_event_variables["fX_weighted_Et"]- _event_variables["xnft"]);
 		     _cloned_hists[ name ] [ "dpos_Y_E" ] ->Fill(_event_variables["fY_weighted_Et"] - _event_variables["ynft"]);
 
   } else if ( name == "PU0_backward" ){
@@ -429,7 +534,10 @@ void HGCPlotting::FillAllHists( std::string name ){
 		    _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_backward"  ] );   
 		    _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_backward"  ] );                
 		    _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_backward"] );
-		    _cloned_hists[ name ] [ "dpos" ] ->Fill( _event_variables["bd_pos"]);
+		    //_cloned_hists[ name ] [ "dpos" ] ->Fill( _event_variables["bd_pos"]);
+			
+			// Radius specific
+			//_cloned_hist [ name ] [ HIST NAME ] ->Fill ([_event_variables["bd_pos_E"]]); 
   
   }
 
