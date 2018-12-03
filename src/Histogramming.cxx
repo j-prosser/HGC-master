@@ -252,11 +252,9 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 			*(_event_variables["bX_weighted_Et"] - _event_variables["xnbt"])
 			+(_event_variables["bY_weighted_Et"] - _event_variables["ynbt"])
 			*(_event_variables["bY_weighted_Et"] - _event_variables["ynbt"]) ); 
-
     /*difference in energy for circle*/
 	_event_variables["fd_energy_R"] = _event_variables["fE_sum"] - gen_pt->at(0);
 	_event_variables["bd_energy_R"] = _event_variables["bE_sum"] - gen_pt->at(1);
-
 }
 
 Candidate::Candidate(const double& XT, const double& YT, const double& ET) : _XT(XT), _YT(YT), _ET(ET) {}
@@ -267,13 +265,13 @@ void Candidate::importDetails(
 	entry tmp;
 	auto xi = X.begin();
 	auto yi = Y.begin();
-	auto pi = P.begin(); 
+	auto pi = P.begin();
+	/*Should add 'and' conditions for each vector, however currently assuming all saeme length*/	
 	while (xi != X.end()) {
 		tmp.x = *xi; tmp.y = *yi; tmp.p = *pi; 
 		_Entries.push_back(tmp);
-		xi++;
-		yi++;
-		pi++;
+		/*Increment iterators*/
+		xi++; yi++; pi++;
 	}
 }
 
@@ -284,22 +282,21 @@ struct inCircle {
 	inCircle(const double& R, const double& XT, const double& YT): _R(R), _XT(XT), _YT(YT) {}
 	/* Unary function */
 	bool operator()(const entry& E) const {
-		// Comparision here
+		// Comparision here, (true if outside R!)
 		return ( ((E.x-_XT)*(E.x-_XT) + (E.y-_YT)*(E.y-_YT)) > _R*_R ); 
 	}
 }; 
 
 void Candidate::crop(const double& R) {
 	// Crop _Entries  such that they are constrained in the circle defined by R
-	_R = R;
-	
-	//std::cout << "No. of entries: " << _Entries.size() << "\t"; 
+	_R = R;	
+	//std::cout << "Pre-Crop Size: " << _Entries.size() << "\t"; 
 	// Delete entries which are outside circle
 	_Entries.erase( 
 			std::remove_if ( _Entries.begin(), _Entries.end(), inCircle(_R, _XT, _YT) ),
 			_Entries.end() 
 		);	
-	//std::cout << "Croped size: " << _Entries.size() << "\n"; 
+	//std::cout << "Croped Size: " << _Entries.size() << "\n"; 
 } 
 
 void Candidate::calculate_resolutions() {
@@ -308,20 +305,17 @@ void Candidate::calculate_resolutions() {
 	e_res =0; x_res=0; y_res=0; r_res=0; e_sum=0;	
 	// Loop over all candidate entries
 	for(auto const& e: _Entries) {
-		// sum energy
-		e_sum += e.p;
-		// sum weighted position
-		x_res += e.p*e.x;
-		y_res += e.p*e.y;
+		// weighted sums 
+		e_sum += e.p; x_res += e.p*e.x; y_res += e.p*e.y; 
 	}
 	// Divide by weights to obtain weighted average
 	x_res /= e_sum; y_res /= e_sum;
+    // Energy resolution -> Sum(E) - E_truth	
+	e_res = e_sum-_ET; 
 	// Subtract the TRUTH values to obtain resolution for single event
-	x_res -= _XT;
-	y_res -= _YT;
-	e_res -= _ET;
+	x_res -= _XT; y_res -= _YT; 
 	// Calcualte the radial resolution
-	r_res = std::sqrt(x_res*x_res + y_res*y_res);
+	r_res = std::sqrt (x_res*x_res + y_res*y_res) ;
 }
 
 double Candidate::getERes() { return e_res;} 
@@ -354,35 +348,48 @@ std::vector<double> generate_R (const double& start, const double& stop, const d
 	return tmp; 
 }
 
-
 void HGCPlotting::FillAllHists( std::string name ){
-	/* RUN FOR EVERY __name__ IN EVERY EVENT*/
+	/* RUN FOR EVERY __name__ IN EVERY EVENT */
+	
 	// Calculate TC readouts from root datastructure
 	CalculateTriggerCellVariables();
    
+	/*
+	 * TODO: 
+	 *		- Implement data structure (_event_variables ???) to hold values, from which S.D.'s are found.
+	 * */
+	//Vectors to store results (per event -> therefore temporary!) 
 	std::map<unsigned, std::vector<double>> ERes;  // r : vector<E_sum>/<>
 	std::map<unsigned, std::vector<double>> ESum; // 
 
 	/*Generate a vector of decreasing R*/
-	std::vector<double> Rs = generate_R(0.1, 0.01, 0.01); 
+	std::vector<double> Rs = generate_R(0.1, 0.005, 0.005); 
 	unsigned r_idx = 0;
-    for (auto& r_curr : Rs) {	
+    
+	
+	// Initialise with vars
+	Candidate fCand( _event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
+	Candidate bCand( _event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(0));
+	// Import event details (readout)
+	fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
+	bCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
+	for (auto& r_curr : Rs) {	
 		//Debug
-		std::cout << "current r: "<<r_curr<<"\n";
+		//std::cout << "R: "<<r_curr<<"\t";	
 		
-		// Initialise with vars
-		Candidate fCand(_event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
-		Candidate bCand(_event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(0));
-		// Import event details (readout)
-		fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
-		fCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
 		// Crop everything outside r
-		fCand.crop(r_curr); fCand.crop(r_curr);
-		// Now we can get the data that we want 	  
-		std::cout << "ERes/ESum" <<"\t" <<fCand.getERes() << "\\" << fCand.getESum() <<"\n"; 
+		fCand.crop(r_curr); 
+		// Do calculations
+		fCand.calculate_resolutions();
 		
+		// Now we can get the data that we want 	  
+		//std::cout << "ERes/ESum" <<"\t\t" <<fCand.getERes() << "\\" << fCand.getESum() <<"\n"; 
+		//std::cout << "Position Res.\t" << fCand.getXRes() << "\n";
+
+		// Every event, ADD to ERes,ESum, 
 		ERes[r_idx].push_back(fCand.getERes());
 		ESum[r_idx].push_back(fCand.getESum());
+
 		//TODO implement for backward case ;)
 		//bCand.getERes(); 
 		// Increment loop (important!)
@@ -394,7 +401,10 @@ void HGCPlotting::FillAllHists( std::string name ){
 		// For each r;
 		double ave_res = Average(ERes[i]);
 		double ave_sum = Average(ESum[i]);	
-		std::cout << ave_res << "\t" << ave_sum << "\n";
+		//Debug
+		//std::cout << "R: "<< Rs[i] <<"\n"<< ave_res << "\t" << ave_sum << "\n";
+		
+		std::cout << "S.D.:\t" << Deviation(ERes[i], ave_res)<<"\n";
 		sig_E_E.push_back( Deviation(ERes[i], ave_res)  / ave_sum);
 		// Calc mean then S. Dev.
 	}
@@ -403,7 +413,6 @@ void HGCPlotting::FillAllHists( std::string name ){
 		std::cout << val << "\n";	
 	}*/
 
-    
 	//if ( name == "PU0" ||  name == "PU200" )
 
 	if ( name == "TriggerCells" ){
