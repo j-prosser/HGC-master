@@ -47,4 +47,11 @@ public:
 
 };
 
+std::vector<double> generate_R (const double& start, const double& stop, const double& inc);
+
+double Deviation(std::vector<double>& V, double& mean);
+
+double Average(std::vector<double>& V);
+
+
 #endif

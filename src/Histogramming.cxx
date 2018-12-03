@@ -6,44 +6,25 @@
 #include <algorithm> // For remove_if
 
 
-//Creates List of radii over which the program can run
-const int NumberOfEntries = 40;
-double LowLimit = 0;
-double HighLimit = 0.08;
-double RadiiList [NumberOfEntries] = {};
-
 
 void HGCPlotting::MakeAllHists( std::vector<std::string> &HistoSets){
-
-	std::cout << "Creating All Histograms" << std::endl;
-
+	std::cout << "Creating All Histograms: " << std::endl;
 	for (auto& names : HistoSets ){
-            LoadHistoTemplates ( names );
+            LoadHistoTemplates (names);
+			std::cout << "\t" << names << "\n";
     }  
 
 }
 
 	
-
 // TH1D Syntax: new TH1D(name, title, nbinsx, xlow, xhigh) ; xlow-> edge of lowest bin, xhigh -> edge of highest bin
 // or: new TH1D(name, title, nbinsx, xbins) ; xbins -> low edge of of everybin, contains nbinsx+1 entries. 
-
 void HGCPlotting::LoadHistoTemplates( std::string name ) { 
-	/* Initialise all empty plots */
-	
-	// Code to run multiple Rs (stephans)
-	/*
-	for (unsigned j=0; j < NumberOfEntries; j++) {
-		double Value = round((LowLimit + j*(HighLimit-LowLimit)/NumberOfEntries)*1000)/1000 ;
-		RadiiList[j] = Value;
-	}
-	*/		
+	/* Initialise all empty histograms */
 	
 	if ( name == "TriggerCells" ) {
-	
 		_cloned_hists[ name ] [ "tc_eta" ] = new TH1D ( (name + "_tc_eta").c_str(), "", 100,-5,5 );  
 		_cloned_hists[ name ] [ "tc_phi" ] = new TH1D ( (name + "_tc_phi").c_str(), "", 100,-M_PI,M_PI );  // M_PI == Pi 
-
 	} else if ( name == "PU0_General" ){
 		  _cloned_hists[ name ] [ "tc_n" ] = new TH1D ( (name + "_tc_n").c_str(), "", 100,0,1000 );  
 	} else if ( name == "PU200" ){		
@@ -60,33 +41,14 @@ void HGCPlotting::LoadHistoTemplates( std::string name ) {
 		_cloned_hists[ name ] [ "ephi_sum" ] = new TH1D ( (name + "_ephi_sum").c_str(), "", 150,-M_PI,M_PI);// energy sum over all phi (-pi to pi)
 		_cloned_hists[ name ] [ "dphi_met" ] = new TH1D ( (name + "_dphi_met").c_str(), "", 150,-0.05,0.05);// delta Phi, difference between phi
 		_cloned_hists[ name ] [ "denergy" ] = new TH1D ( (name + "_denergy").c_str(), "", 150, -5.0,5.0); // difference in energy
-		_cloned_hists[ name ] [ "dpos" ] = new TH1D ( (name + "_dpos").c_str(), "", 150, 0,.1);
-		_cloned_hists[ name ] [ "dpos_2" ] = new TH1D ( (name + "_dpos_E").c_str(), "", 150, 0,.1);
-		_cloned_hists[ name ] [ "dpos_X" ] = new TH1D ( (name + "_dpos_x").c_str(), "", 150, -.04,.04);
-		_cloned_hists[ name ] [ "dpos_Y" ] = new TH1D ( (name + "_dpos_y").c_str(), "", 150, -.04,.04);
-		_cloned_hists[ name ] [ "dpos_X_E" ] = new TH1D ( (name + "_dpos_x_E").c_str(), "", 150, -.04,.04);
-		_cloned_hists[ name ] [ "dpos_Y_E" ] = new TH1D ( (name + "_dpos_y_E").c_str(), "", 150, -.04,.04);
-		_cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);											   
+		//_cloned_hists[ name ] [ "dpos" ] = new TH1D ( (name + "_dpos").c_str(), "", 150, 0,.1);
+		//_cloned_hists[ name ] [ "dpos_2" ] = new TH1D ( (name + "_dpos_E").c_str(), "", 150, 0,.1);
+		//_cloned_hists[ name ] [ "dpos_X" ] = new TH1D ( (name + "_dpos_x").c_str(), "", 150, -.04,.04);
+		//_cloned_hists[ name ] [ "dpos_Y" ] = new TH1D ( (name + "_dpos_y").c_str(), "", 150, -.04,.04);
+		//_cloned_hists[ name ] [ "dpos_X_E" ] = new TH1D ( (name + "_dpos_x_E").c_str(), "", 150, -.04,.04);
+		//_cloned_hists[ name ] [ "dpos_Y_E" ] = new TH1D ( (name + "_dpos_y_E").c_str(), "", 150, -.04,.04);
+		//_cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);											   
 	}
-
-	//} else if (name="single_event") {
-	//scatter in normalised co-ordinates
-	//	_clone_2d_map[ name ] [ "scatter_norm" ] = new TH2D ((name+"_scatter_norm").c_str(), )	
-	//}
-	// Multiple R code
-	/*
-	else if ( name == "PU0_forward" || name == "PU0_backward" ){
-		for (int j=0; j < NumberOfEntries; j++) {
-			char o[50];
-			sprintf(o, "%f", RadiiList[j]);
-			o[5] = '\0';
-			std::string p = o;
-			std::string HistName  = "_denergy_R_" + p;
-			_cloned_hists[ name] [ HistName  ] = new TH1D ( (name+HistName).c_str(), "", 150, -10,10);
-		}
-  }
-  */	
-
 }
 
 
@@ -297,14 +259,11 @@ void HGCPlotting::CalculateReducedCircle(const double& R) {
 
 }
 
+Candidate::Candidate(const double& XT, const double& YT, const double& ET) : _XT(XT), _YT(YT), _ET(ET) {}
 
-Candidate::Candidate(const double& XT, const double& YT, const double& ET) : 
-	_XT(XT), _YT(YT), _ET(ET) 
-{	
-}
-
-void Candidate::importDetails(const std::vector<double>& X, const std::vector<double>& Y, const std::vector<double>& P) {
-	//
+void Candidate::importDetails(
+		const std::vector<double>& X, const std::vector<double>& Y, const std::vector<double>& P) {
+	/*Import TC readouts by iterating over X,Y,P*/
 	entry tmp;
 	auto xi = X.begin();
 	auto yi = Y.begin();
@@ -318,64 +277,50 @@ void Candidate::importDetails(const std::vector<double>& X, const std::vector<do
 	}
 }
 
-
-
+/* Declaration + Definition for the iCricle condition*/
 struct inCircle {
-    double _R, _XT,_YT;
-    	
-	// Params
+    double _R, _XT,_YT;    	
+	/* Constructor */
 	inCircle(const double& R, const double& XT, const double& YT): _R(R), _XT(XT), _YT(YT) {}
+	/* Unary function */
 	bool operator()(const entry& E) const {
 		// Comparision here
 		return ( ((E.x-_XT)*(E.x-_XT) + (E.y-_YT)*(E.y-_YT)) > _R*_R ); 
 	}
 }; 
 
-
 void Candidate::crop(const double& R) {
 	// Crop _Entries  such that they are constrained in the circle defined by R
-	// Have vector _Entries
 	_R = R;
-	
-	//MarkEntries for deletion
-	
 	
 	//std::cout << "No. of entries: " << _Entries.size() << "\t"; 
 	// Delete entries which are outside circle
 	_Entries.erase( 
-			std::remove_if ( 
-				_Entries.begin(), _Entries.end(), inCircle(_R, _XT, _YT) 
-				),
-		   _Entries.end() );	
+			std::remove_if ( _Entries.begin(), _Entries.end(), inCircle(_R, _XT, _YT) ),
+			_Entries.end() 
+		);	
 	//std::cout << "Croped size: " << _Entries.size() << "\n"; 
 } 
 
 void Candidate::calculate_resolutions() {
 	/*Calculate the e_res, x_res, y_res, e_sum*/
-
 	// Initialise result doubles to zero.
-	e_res =0; x_res=0; y_res=0; r_res=0; e_sum=0;
-
+	e_res =0; x_res=0; y_res=0; r_res=0; e_sum=0;	
+	// Loop over all candidate entries
 	for(auto const& e: _Entries) {
-		// Loop over all candidate entries
-		
 		// sum energy
 		e_sum += e.p;
-		
 		// sum weighted position
 		x_res += e.p*e.x;
 		y_res += e.p*e.y;
-
 	}
 	// Divide by weights to obtain weighted average
 	x_res /= e_sum; y_res /= e_sum;
-
-
 	// Subtract the TRUTH values to obtain resolution for single event
 	x_res -= _XT;
 	y_res -= _YT;
 	e_res -= _ET;
-
+	// Calcualte the radial resolution
 	r_res = std::sqrt(x_res*x_res + y_res*y_res);
 }
 
@@ -385,162 +330,123 @@ double Candidate::getYRes() { return y_res;}
 double Candidate::getRRes() { return r_res;}
 double Candidate::getESum() { return e_sum;} 
 
+double Average(std::vector<double>& V) {
+	/*Finds the mean (average) of a vector of doubles*/	
+	double mean = 0;
+	for (auto it = V.begin(); it != V.end(); ++it) {
+		mean += *it;
+	}
+	return mean / static_cast<double>(V.size());
+}
+
+double Deviation(std::vector<double>& V, double& mean){
+	/*Finds the standard deviation of a vector given its mean.*/
+	double E=0;
+	double inv = 1.0 / static_cast<double>(V.size());
+	for (unsigned i =0; i < V.size(); ++i) { E += std::pow(V[i] - mean, 2); }
+	return std::sqrt(inv*E);
+} 
+
+std::vector<double> generate_R (const double& start, const double& stop, const double& inc) {
+	/*Generate a vector of decrase R*/
+	std::vector<double> tmp;
+	for (double r_tmp=start; r_tmp > stop; r_tmp -= inc ) { tmp.push_back(r_tmp); }
+	return tmp; 
+}
+
+
 void HGCPlotting::FillAllHists( std::string name ){
-  /* RUN FOR EVERY __name__ IN EVERY EVENT*/
+	/* RUN FOR EVERY __name__ IN EVERY EVENT*/
+	// Calculate TC readouts from root datastructure
+	CalculateTriggerCellVariables();
+   
+	std::map<unsigned, std::vector<double>> ERes;  // r : vector<E_sum>/<>
+	std::map<unsigned, std::vector<double>> ESum; // 
 
-  CalculateTriggerCellVariables();
-
-  //double r = 0.04;
-  // Run calcs for radius r about truth values, remember, SINGLE EVENT at a time, saved to _event_variables.
-  // If run multiple times, will currently replace itself for each R
-  //CalculateReducedCircle(r); 
- 
-  /*
-  std::cout << _event_variables["fX_weighted_Et"]-_event_variables["xnft"] << "\t";
-  // Get the data into the required form
-
-  // Initialise Candidate instance 
-  Candidate fCand(_event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0));
-  fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
-  fCand.crop(r);  
-  
-  fCand.calculate_resolutions();	
-
-  std::cout << fCand.getXRes() << "\n";
-  std::cout << _event_variables["fd_energy_R"] << "\t";
-  std::cout << fCand.getESum() << "\n \n";
- 
-  Candidate bCand(_event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(0));
-  bCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
-  bCand.crop(r);
-  */
- 
-
-  
-  std::pair<double,double> r_lims(0.1, 0.01); 
-  unsigned r_num = 10;
-  double r_curr;
-  double r_inc = (r_lims.first/r_lims.second)/r_num; 
-
-  std::map<unsigned, std::vector<double>> data_r;  // r : vector<E_sum>/<>
-
-  for (unsigned i = 0; i < r_num ;++i ) {
-	  // Initialise with vars
-	  Candidate fCand(_event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
-	  Candidate bCand(_event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(0));
-	  // Import event details (readout)
-	  fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
-	  fCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
-
-	  // 
-	  fCand.crop(r_curr); fCand.crop(r_curr);
-	  // Now we can get the data that we want 	  
-       
-
-	  data_r[i].push_back(fCand.getERes());
-	  //bCand.getERes(); 
-
-	  // Increment loop (important!)
-	  r_curr += r_inc;
-  }
-
-
-  /*TODO 
-   *	Implement methods for:
-   *		- d-position (radial,x,y)
-   *		- d-energy (E_sum - E_truth)
-   * */
-
-
-  // Implement Scheme to loop over varying R, 
-  /*
-	unsigned r_num = 10;
-	pair<double,double> r_range;
-	double r_curr;
-	r_range.first = 0.1;
-	r_range.second = 0.01;	
-	r_curr = r_range.first;
-	for (unsigned i=0; i < r_num;i++) {
-
-		r_curr -= (r_range.first - r_range.second)/r_num ;
+	/*Generate a vector of decreasing R*/
+	std::vector<double> Rs = generate_R(0.1, 0.01, 0.01); 
+	unsigned r_idx = 0;
+    for (auto& r_curr : Rs) {	
+		//Debug
+		std::cout << "current r: "<<r_curr<<"\n";
 		
-		// create candidates for f/b; 
-		// calculate res
-		// store res for specified r_check 
+		// Initialise with vars
+		Candidate fCand(_event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
+		Candidate bCand(_event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(0));
+		// Import event details (readout)
+		fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
+		fCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
+		// Crop everything outside r
+		fCand.crop(r_curr); fCand.crop(r_curr);
+		// Now we can get the data that we want 	  
+		std::cout << "ERes/ESum" <<"\t" <<fCand.getERes() << "\\" << fCand.getESum() <<"\n"; 
+		
+		ERes[r_idx].push_back(fCand.getERes());
+		ESum[r_idx].push_back(fCand.getESum());
+		//TODO implement for backward case ;)
+		//bCand.getERes(); 
+		// Increment loop (important!)
+		r_idx +=1;
+	}
+	
+	std::vector<double> sig_E_E;
+	for (unsigned i=0; i<Rs.size(); ++i) {
+		// For each r;
+		double ave_res = Average(ERes[i]);
+		double ave_sum = Average(ESum[i]);	
+		std::cout << ave_res << "\t" << ave_sum << "\n";
+		sig_E_E.push_back( Deviation(ERes[i], ave_res)  / ave_sum);
+		// Calc mean then S. Dev.
+	}
 
-		}
-   */
+	/*for (auto& val : sig_E_E) {
+		std::cout << val << "\n";	
+	}*/
 
     
-  //  if ( name == "PU0" ||  name == "PU200" )
+	//if ( name == "PU0" ||  name == "PU200" )
 
-  if ( name == "TriggerCells" ){
-    // Visualise TCs...
-	// 
-    for (unsigned int i = 0; i < tc_eta->size(); i++){
-      _cloned_hists[ name ] [ "tc_eta" ] ->Fill ( tc_eta->at(i) );
-      _cloned_hists[ name ] [ "tc_phi" ] ->Fill ( tc_phi->at(i) );
-    }
-  } else if ( name == "PU0_General" ){
-    	_cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
-  } else if ( name == "PU0_forward" ){
-
-	    /*
-		for (int j=0; j<NumberOfEntries; j++) {
-			CalculateReducedCircle(RadiiList[j]); 
-			char o[50];
-			sprintf(o, "%f", RadiiList[j]);
-			o[5] = '\0';
-			std::string p = o;
-			std::string HistName  = "_denergy_R_" + p;
-			_cloned_hists[ name] [ HistName  ] ->Fill( _event_variables["fd_energy_R"]);
+	if ( name == "TriggerCells" ){
+		// Visualise TCs...
+		for (unsigned int i = 0; i < tc_eta->size(); i++){
+			_cloned_hists[ name ] [ "tc_eta" ] ->Fill ( tc_eta->at(i) );
+			_cloned_hists[ name ] [ "tc_phi" ] ->Fill ( tc_phi->at(i) );
 		}
-		*/
-
-			// Histograms for entire event, sums over all TCs
-		     _cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_forward"  ] );
-		     _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_forward"  ] );
-		     _cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_forward"  ] );
-		     //std::cout << _event_variables["er_sum_forward"] << std::endl;//yoyo-db  
-		     _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_forward"  ] );        
-		     _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_forward"  ] );    
-		     _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_forward"] );
+	} else if ( name == "PU0_General" ){
+    	_cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
+	} else if ( name == "PU0_forward" ){
+		// Histograms for entire event, sums over all TCs
+		_cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_forward"  ] );
+	    _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_forward"  ] );
+		_cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_forward"  ] );
+		//std::cout << _event_variables["er_sum_forward"] << std::endl;//yoyo-db  
+	    _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_forward"  ] );        
+		_cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_forward"  ] );    
+		_cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_forward"] );
 		        
 			 // Radius specific histograms, position, energy resolutions
-			 _cloned_hists[ name ] [ "dpos_2" ] ->Fill(_event_variables["fd_pos_E"]);
+			 //_cloned_hists[ name ] [ "dpos_2" ] ->Fill(_event_variables["fd_pos_E"]);
 			 //_cloned_hists[ name ] [ "dpos" ] ->Fill(_event_variables["fd_pos"]);
 			 // Redacted momentum weight
 			 //_cloned_hists[ name ] [ "dpos_X" ] ->Fill(_event_variables["fX_weighted_pt"]- _event_variables["xnft"]);
 		     //_cloned_hists[ name ] [ "dpos_Y" ] ->Fill(_event_variables["fY_weighted_pt"] - _event_variables["ynft"]);
-			 _cloned_hists[ name ] [ "dpos_X_E" ] ->Fill(_event_variables["fX_weighted_Et"]- _event_variables["xnft"]);
-		     _cloned_hists[ name ] [ "dpos_Y_E" ] ->Fill(_event_variables["fY_weighted_Et"] - _event_variables["ynft"]);
+			 //_cloned_hists[ name ] [ "dpos_X_E" ] ->Fill(_event_variables["fX_weighted_Et"]- _event_variables["xnft"]);
+		     //_cloned_hists[ name ] [ "dpos_Y_E" ] ->Fill(_event_variables["fY_weighted_Et"] - _event_variables["ynft"]);
 
-  } else if ( name == "PU0_backward" ){
-	    /*
-		for (int j=0; j<NumberOfEntries; j++) {
-			CalculateReducedCircle(RadiiList[j]); 
-			char o[50];
-			sprintf(o, "%f", RadiiList[j]);
-			o[5] = '\0';
-			std::string p = o;
-			std::string HistName  = "_denergy_R_" + p;
-			_cloned_hists[ name] [ HistName  ] ->Fill( _event_variables["bd_energy_R"]);
-		}
-		*/
-		    _cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
-		    _cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_backward"  ] );
-		    _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_backward"  ] );
-		    _cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_backward"  ] );
-		    _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_backward"  ] );   
-		    _cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_backward"  ] );                
-		    _cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_backward"] );
-		    //_cloned_hists[ name ] [ "dpos" ] ->Fill( _event_variables["bd_pos"]);
-			
-			// Radius specific
-			//_cloned_hist [ name ] [ HIST NAME ] ->Fill ([_event_variables["bd_pos_E"]]); 
+	} else if ( name == "PU0_backward" ){
+		//_cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
+		_cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_backward"  ] );
+	    _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_backward"  ] );
+	    _cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_backward"  ] );
+		_cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_backward"  ] );   
+		_cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_backward"  ] );                
+		_cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_backward"] );
+		//_cloned_hists[ name ] [ "dpos" ] ->Fill( _event_variables["bd_pos"]);
+		// Radius specific
+		//_cloned_hist [ name ] [ HIST NAME ] ->Fill ([_event_variables["bd_pos_E"]]); 
   
   }
-
 }
+
 
 
