@@ -374,19 +374,17 @@ void HGCPlotting::FillAllHists( std::string name ){
 	fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
 	bCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
 	for (auto& r_curr : Rs) {	
-		//Debug
-		//std::cout << "R: "<<r_curr<<"\t";	
-		
 		// Crop everything outside r
 		fCand.crop(r_curr); 
 		// Do calculations
 		fCand.calculate_resolutions();
-		
 		// Now we can get the data that we want 	  
 		//std::cout << "ERes/ESum" <<"\t\t" <<fCand.getERes() << "\\" << fCand.getESum() <<"\n"; 
 		//std::cout << "Position Res.\t" << fCand.getXRes() << "\n";
 
-		// Every event, ADD to ERes,ESum, 
+		// Every event, ADD to ERes,ESum,
+		// NEED TO ADD THESE VALUES TO A GLOBAL data structure, such that they can be summed later, when 
+		// processes have finished for all events. 
 		ERes[r_idx].push_back(fCand.getERes());
 		ESum[r_idx].push_back(fCand.getESum());
 
@@ -396,6 +394,8 @@ void HGCPlotting::FillAllHists( std::string name ){
 		r_idx +=1;
 	}
 	
+
+	// THIS NEEDS TO BE OUTSIDE any LOOP!, I.e. run at the end!
 	std::vector<double> sig_E_E;
 	for (unsigned i=0; i<Rs.size(); ++i) {
 		// For each r;
@@ -409,9 +409,6 @@ void HGCPlotting::FillAllHists( std::string name ){
 		// Calc mean then S. Dev.
 	}
 
-	/*for (auto& val : sig_E_E) {
-		std::cout << val << "\n";	
-	}*/
 
 	//if ( name == "PU0" ||  name == "PU200" )
 
