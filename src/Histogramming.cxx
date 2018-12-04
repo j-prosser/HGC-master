@@ -399,18 +399,15 @@ void HGCPlotting::FillAllHists( std::string name ){
 		//_cloned_hist [ name ] [ HIST NAME ] ->Fill ([_event_variables["bd_pos_E"]]); 
   
 	} else if ( name == "Radial_Reconstruction") {
-			
-	
-	/*
-	 * TODO: 
-	 *		- Implement data structure (_event_variables ???) to hold values, from which S.D.'s are found.
-	 * */
-	//Vectors to store results (per event -> therefore temporary!) 
-	std::map<unsigned, std::vector<double>> ERes;  // r : vector<E_sum>/<>
-	std::map<unsigned, std::vector<double>> ESum; // 
 
-	/*Generate a vector of decreasing R*/
+	//Vectors to store results (per event -> therefore temporary!) 
+	// USE: _radial_reconstruction INSTEAD, <std::string, vector<double> >
+	//std::map<unsigned, std::vector<double>> ERes;  // r : vector<E_sum>/<>
+	//std::map<unsigned, std::vector<double>> ESum; // 
+
+	/*Generate a vector of decreasing R (for each event)*/
 	std::vector<double> Rs = generate_R(0.1, 0.005, 0.005); 
+	
 	unsigned r_idx = 0;
     
 	
@@ -429,11 +426,11 @@ void HGCPlotting::FillAllHists( std::string name ){
 		//std::cout << "ERes/ESum" <<"\t\t" <<fCand.getERes() << "\\" << fCand.getESum() <<"\n"; 
 		//std::cout << "Position Res.\t" << fCand.getXRes() << "\n";
 
-		// Every event, ADD to ERes,ESum,
 		// NEED TO ADD THESE VALUES TO A GLOBAL data structure, such that they can be summed later, when 
 		// processes have finished for all events. 
-		ERes[r_idx].push_back(fCand.getERes());
-		ESum[r_idx].push_back(fCand.getESum());
+		// USE _radial_reconstruction
+		_radial_reconstruction["e_res"][r_curr].push_back(fCand.getERes());
+		_radial_reconstruction["e_sum"][r_curr].push_back(fCand.getESum());
 
 		//TODO implement for backward case ;)
 		//bCand.getERes(); 
@@ -461,6 +458,41 @@ void HGCPlotting::FillAllHists( std::string name ){
 	}*/
 		
 	}
+}
+
+void HGCPlotting::CalculateCircleStats() {
+	/*Does stuff on _radial_reconstruction dataset*/
+	/*Output onto _radial_results*/
+
+	//Get means and stdev
+	
+	/*
+	auto r_res_it = _radial_reconstruction["e_res"].begin();
+	auto e_sum_it = _radial_reconstruction["e_sum"].begin();
+	while ( e_sum_it != _radial_reconstruction["e_sum"].end() 
+			|| e_res_it != _radial_reconstruction["e_res"].end() ) 
+	{	
+		_radial_results["mean_e_res"][e_res_it.first] = Mean( e_res_it.second) ;
+		_radial_results["mean_e_sum"][e_sum_it.first] = Mean( e_sum_it.second) ;
+		_radial_results["stdev_e_res"][e_res_it.first] = Deviation( *e_res_it.second, _radial_results["mean_e_res"]);
+	   _radial_results["sig_e_over_e"][e_res_it.first]  = _radial_results["stdev_e_res"] / _radial_results["mean_e_sum"][e_res_it.first];	
+	}
+	*/
+
+	for (auto& r_pair : _radial_reconstruction["e_sum"]) {
+		_radial_results["mean_e_sum"][r_pair.first] = Mean(r_pair.second);
+	}
+	//_radial_reconstruction["e_res"] 
+	for (auto & r_pair : _radial_reconstruction["e_res"]) {
+		_radial_results["mean_e_res"][r_pair.first] = Mean(r_pair.second); 
+		_radial_results["stdev_e_res"][r_pair.first] = Deviation(r_pair.second, _radial_results["mean_e_res"][r_pair.first] );
+		//std::cout << r_pair.first << "\t" << "Mean e_res " << Mean(r_pair.second) << "\n";
+		_radial_results["sig_e_e"][r_pair.first] = _radial_results["stdev_e_res"][r_pair.first] / _radial_results["mean_e_sum"][r_pair.first]; 
+		
+		std::cout << r_pair.first << "\t" << "sigma_E/E\t" << _radial_results["sig_e_e"][r_pair.first] << "\n"; 
+	}	
+
+
 }
 
 

@@ -125,10 +125,10 @@ void HGCPlotting::Loop( ){
     }
     
 	
-	/* Generate TC read outs*/
-	
+	/* Generate TC read outs*/	
 	CalculateTriggerCellVariables();
 	
+
 	/* Histograms are Filled using their respective data
 	 * RUNS EVERY EVENT*/ 
 	for (auto& names : _HistoSets ){
@@ -194,6 +194,22 @@ void HGCPlotting::Loop( ){
 
 
   }
+	std::cout << "****\tEND of Event Loop\t****" << std::endl;
+	
+	/*Occurs after loop*/
+
+	for (auto const& x : _radial_reconstruction) {
+		std::cout << "DATA_NAME:\t"<< x.first << "\n";
+		for (auto const& y: x.second) {
+			//std::cout << y.first << "\t" << y.second.size();
+			//std::cout << "\n";
+		}
+		std::cout << "\n";
+	}  
+
+	CalculateCircleStats();
+	/*Now Fill scatter plot*/
+
 
 }
 

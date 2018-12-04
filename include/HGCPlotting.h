@@ -64,9 +64,19 @@ class HGCPlotting : public BuildTreeBase {
   
   //doublemap _event_single;
   typedef std::map<std::string, std::vector<double>> vectormap;
-  vectormap _event_details; // map of vectors
   
-  vectormap _radial_reconstruction; 
+  typedef std::map<double, std::vector<double>> doublevectormap;
+  typedef std::map<std::string, doublevectormap> stringdoublemap;
+
+  /* string : double : vector(doubles) 
+   * data_id : r_curr : vector(data) */
+  stringdoublemap _radial_reconstruction;
+  
+  vectormap _event_details; // map of vectors 
+
+  typedef std::map< std::string, std::map<double, double> > stringdoubledouble;
+  stringdoubledouble _radial_results;
+
 
   plot_2d_map _2d_plots; 
 
@@ -91,6 +101,8 @@ class HGCPlotting : public BuildTreeBase {
   void CalculateTriggerCellVariables();
 
   void CalculateReducedCircle(const double& R);
+
+  void CalculateCircleStats();
 
   void FillAllHists( std::string name );
 
