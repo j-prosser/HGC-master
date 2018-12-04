@@ -4,7 +4,7 @@
 
 #include <candidate.h>
 #include <algorithm> // For remove_if
-
+#include <TVectorD.h> 
 
 
 void HGCPlotting::MakeAllHists( std::vector<std::string> &HistoSets){
@@ -48,6 +48,8 @@ void HGCPlotting::LoadHistoTemplates( std::string name ) {
 		//_cloned_hists[ name ] [ "dpos_X_E" ] = new TH1D ( (name + "_dpos_x_E").c_str(), "", 150, -.04,.04);
 		//_cloned_hists[ name ] [ "dpos_Y_E" ] = new TH1D ( (name + "_dpos_y_E").c_str(), "", 150, -.04,.04);
 		//_cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);											   
+	} else if ( name == "Radial_Reconstruction" )  { 
+	_graphs["sig_e_e_r"] = new TGraph(); // n,x,y	
 	}
 }
 
@@ -463,25 +465,13 @@ void HGCPlotting::FillAllHists( std::string name ){
 void HGCPlotting::CalculateCircleStats() {
 	/*Does stuff on _radial_reconstruction dataset*/
 	/*Output onto _radial_results*/
-
-	//Get means and stdev
-	
-	/*
-	auto r_res_it = _radial_reconstruction["e_res"].begin();
-	auto e_sum_it = _radial_reconstruction["e_sum"].begin();
-	while ( e_sum_it != _radial_reconstruction["e_sum"].end() 
-			|| e_res_it != _radial_reconstruction["e_res"].end() ) 
-	{	
-		_radial_results["mean_e_res"][e_res_it.first] = Mean( e_res_it.second) ;
-		_radial_results["mean_e_sum"][e_sum_it.first] = Mean( e_sum_it.second) ;
-		_radial_results["stdev_e_res"][e_res_it.first] = Deviation( *e_res_it.second, _radial_results["mean_e_res"]);
-	   _radial_results["sig_e_over_e"][e_res_it.first]  = _radial_results["stdev_e_res"] / _radial_results["mean_e_sum"][e_res_it.first];	
-	}
-	*/
-
 	for (auto& r_pair : _radial_reconstruction["e_sum"]) {
 		_radial_results["mean_e_sum"][r_pair.first] = Mean(r_pair.second);
 	}
+
+	std::vector<double> tmp_r;
+	std::vector<double> tmp_sigee;
+
 	//_radial_reconstruction["e_res"] 
 	for (auto & r_pair : _radial_reconstruction["e_res"]) {
 		_radial_results["mean_e_res"][r_pair.first] = Mean(r_pair.second); 
@@ -490,9 +480,20 @@ void HGCPlotting::CalculateCircleStats() {
 		_radial_results["sig_e_e"][r_pair.first] = _radial_results["stdev_e_res"][r_pair.first] / _radial_results["mean_e_sum"][r_pair.first]; 
 		
 		std::cout << r_pair.first << "\t" << "sigma_E/E\t" << _radial_results["sig_e_e"][r_pair.first] << "\n"; 
-	}	
+		tmp_r.push_back(r_pair.first);
+		tmp_sigee.push_back(_radial_results["sig_e_e"][r_pair.first]); 
+	}
 
+	//Make some plots! 
+	// TVector<float> tvf(svf.size(), &svf[0]);
+	TVectorD tv_r(tmp_r.size(), &tmp_r[0]);	
+	TVectorD tv_sigee(tmp_sigee.size(), &tmp_sigee[0]);
 
+	TFile f("testout.root","RECREATE");
+	f.cd();
+	//TGraph g(10);
+	_graphs["test"] = new TGraph( tv_r,tv_sigee );  
+	_graphs["test"]->Write();
 }
 
 

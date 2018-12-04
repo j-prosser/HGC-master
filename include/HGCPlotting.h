@@ -61,7 +61,9 @@ class HGCPlotting : public BuildTreeBase {
 
   // define vector of 
   typedef std::map<std::string, TH2D*> plot_2d_map;
-  
+	typedef std::map<std::string, TGraph*> map_tgraphs;
+
+
   //doublemap _event_single;
   typedef std::map<std::string, std::vector<double>> vectormap;
   
@@ -79,6 +81,7 @@ class HGCPlotting : public BuildTreeBase {
 
 
   plot_2d_map _2d_plots; 
+  map_tgraphs _graphs; 
 
  public :
   HGCPlotting( CmdLine * cmd );
