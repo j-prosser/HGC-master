@@ -16,8 +16,8 @@ int main ( int argc, char ** argv ) {
 
   hgcPlotting->SetupRoot();
 
-
-  hgcPlotting->Fill();
+  /*Calls the loop over all Events, then, HistoSets*/
+  hgcPlotting->Fill(); 
 
 
   hgcPlotting->Save();

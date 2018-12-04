@@ -26,6 +26,7 @@ HGCPlotting::HGCPlotting( CmdLine * cmd ){
   _HistoSets.push_back( "PU0_forward" );
   _HistoSets.push_back( "PU0_backward" );
 
+  _HistoSets.push_back("Radial_Reconstruction"); 
   //yoyo
 //  _HistoSets.push_back( "TriggerCells" );
   //_HistoSets.push_back( "" );
@@ -52,13 +53,12 @@ void HGCPlotting::DoNothing(){
 
 void HGCPlotting::SetupRoot(){
 
+	_chain = new TChain ("hgcalTriggerNtuplizer/HGCalTriggerNtuple");
 
-  _chain = new TChain ("hgcalTriggerNtuplizer/HGCalTriggerNtuple");
+	//  std::string remotedir = "root://cms-xrd-global.cern.ch//store/user/sawebb/SingleGammaPt25Eta1p6_2p8/crab_SingleGammaPt25_PU0-stc/181025_100629/0000/";
 
-  //  std::string remotedir = "root://cms-xrd-global.cern.ch//store/user/sawebb/SingleGammaPt25Eta1p6_2p8/crab_SingleGammaPt25_PU0-stc/181025_100629/0000/";
-
-  for ( int i = 1; i < 2; i++ ){
-        if (FileExists( (_in_directory + "/ntuples/ntuple_" + std::to_string(i) + ".root"   ).c_str()  )  )   
+	for ( int i = 1; i < 2; i++ ){
+		if (FileExists( (_in_directory + "/ntuples/ntuple_" + std::to_string(i) + ".root"   ).c_str()  )  )   
           _chain  ->Add ( (_in_directory + "/ntuples/ntuple_" + std::to_string(i) + ".root"   ).c_str() );
     //  _chain  ->Add ( (_in_directory + "/ntuple_" + std::to_string(i) + ".root"   ).c_str() );
   }
@@ -68,10 +68,8 @@ void HGCPlotting::SetupRoot(){
 
 
 void HGCPlotting::Fill(){
-
   Init( _chain );
   Loop( );
-
 }
 
 
@@ -79,17 +77,17 @@ void HGCPlotting::Loop( ){
 
   //Loop over events
 
-  std::cout << "Beginning Event Loop" << std::endl;
+  std::cout << "****\tBeginning Event Loop\t****" << std::endl;
 
+  
   if (fChain == 0) return;
 
-  std::cout << "Getting Number of Entries" << std::endl;
+  //std::cout << "Getting Number of Events" << std::endl;
   Long64_t nentries = fChain->GetEntries();
-  std::cout << "Entries: " << nentries << std::endl;
-  
+  std::cout << "Events:\t" << nentries << "\n";
   Long64_t nbytes = 0, nb = 0;
-
-  /////////////////////////////////
+  
+  /* - - - - - - - - - - - - - - - - - - */
   // SET BRANCHES TO BE 'PROCESSED'
   // 	unset all branches
   fChain->SetBranchStatus("*",0);
@@ -103,44 +101,42 @@ void HGCPlotting::Loop( ){
   fChain->SetBranchStatus("gen_eta",1);  
   fChain->SetBranchStatus("gen_energy",1); 
   fChain->SetBranchStatus("gen_pt",1);
-
-  //Detector Geometry- DOESNT WORK :(
-  
+  // Detector geometry 
   fChain->SetBranchStatus("tc_x",1);
   fChain->SetBranchStatus("tc_y",1);
   fChain->SetBranchStatus("tc_z",1);
   fChain->SetBranchStatus("tc_layer",1);
   fChain->SetBranchStatus("tc_zside",1);
-         
+  // SYNTAX       
   //fChain->SetBranchStatus("",1);
-  // MAIN for  LOOP, FILLS HISTOGRAMS
+  /* - - - - - - - - - - - - - - - - - - */
+  
+  /* Loop over all entries -- every event*/
   for (Long64_t jentry=0; jentry<nentries;jentry++) {
-
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     nb = fChain->GetEntry(jentry);   nbytes += nb;
-
-    // yoyo change 10000 devisor to 100
-    if ( jentry % 10000 == 0 ) {
+	// Debug / Process readout
+    if ( jentry % 1000 == 0 ) {
       std::cout << jentry << "/" << nentries  << "\n" ;
-    }
-    // DISPLAY TRUTH INFOMATION <- Move this somewhere
-    if (1 == 0) {
-    // Every jentry has different truth values!    
-    std::cout << "***TRUTH DATA***"  << std::endl;
-    std::cout << "phi: "<< gen_phi->at(0)<<"/"<<gen_phi->at(1) <<std::endl;
-    std::cout << "eta: "<< gen_eta->at(0)<<"/"<<gen_eta->at(1) <<std::endl;
-    std::cout << "energy: "<< gen_energy->at(0)<<"/"<<gen_energy->at(1)<<std::endl;
-    // NOT TESTED std::cout << "pt:" << gen_pt->at(0)<<"/"<<gen_pt->at(1)<<std::endl;
-    //std::cout << "SIZE TRUTH: "<< gen_eta->size()<< std::endl;
     }
     if ( _max_events != -1 ){
       if ( jentry > _max_events ) break;
     }
-    for (auto& names : _HistoSets ){
-	  //std::cout << "TESTING1 "<< names << std::endl;
+    
+	
+	/* Generate TC read outs*/
+	
+	CalculateTriggerCellVariables();
+	
+	/* Histograms are Filled using their respective data
+	 * RUNS EVERY EVENT*/ 
+	for (auto& names : _HistoSets ){
+	  //std::cout << "Filling the HistSet: "<< names << std::endl;
       FillAllHists( names );
     }
+
+	/* Special Cases for debug and other stuff */
 	if (jentry==0) {
 		/*Create plot of single event*/
 	    // Create 2D histogram of event 0	
@@ -155,12 +151,12 @@ void HGCPlotting::Loop( ){
 	    //auto lim = std::minmax_element(test.begin(), test.end());
 		//std::cout << *lim.first << " here" << std::endl;	
 	
-		std::cout << "PLOTTING EVENT 0" << std::endl;		
+		//std::cout << "PLOTTING EVENT 0" << std::endl;		
 
 //		auto x_lims = std::minmax_element (_event_details["xnf"].begin(), _event_details["xnf"].end());	
 //		auto y_lims = std::minmax_element (_event_details["ynf"].begin(), _event_details["ynf"].end());
         
-        std::cout << "size of entire event " << _event_details["xnf"].size() <<std::endl; 		
+        //std::cout << "size of entire event " << _event_details["xnf"].size() <<std::endl; 		
 		
         //std::cout << "x lims: " << *x_lims.first << " "<< *x_lims.second << std::endl; 
 
@@ -176,13 +172,27 @@ void HGCPlotting::Loop( ){
 //        auto ylc = std::minmax_element(_event_details["ynfc"].begin(),_event_details["ynfc"].end());
 //		_2d_plots["cand_plot"] = new TH2D ("normalised_coord_cand_cirlce_0.05", "", 100,*xlc.first,*xlc.second,100,*ylc.first,*ylc.second);
 		
-		std::cout <<"size of event with circle "<< _event_details["xnfc"].size()<< std::endl;
+		//std::cout <<"size of event with circle "<< _event_details["xnfc"].size()<< std::endl;
 		
 //		_2d_plots["cand_plot"] = new TH2D ("normalised_coord_cand_cirlce_0.05", "", 100,-1,1,100,-1,1);
 //		for (unsigned i=0; i<_event_details["ptfc"].size(); ++i) {
 //			_2d_plots["cand_plot"]->Fill(_event_details["xnfc"][i],_event_details["ynfc"][i]);
 //		}	
 	}
+
+    // DISPLAY TRUTH INFOMATION <- Move this somewhere
+    if (1 == 0) {
+    // Every jentry has different truth values!    
+    std::cout << "***TRUTH DATA***"  << std::endl;
+    std::cout << "phi: "<< gen_phi->at(0)<<"/"<<gen_phi->at(1) <<std::endl;
+    std::cout << "eta: "<< gen_eta->at(0)<<"/"<<gen_eta->at(1) <<std::endl;
+    std::cout << "energy: "<< gen_energy->at(0)<<"/"<<gen_energy->at(1)<<std::endl;
+    // NOT TESTED std::cout << "pt:" << gen_pt->at(0)<<"/"<<gen_pt->at(1)<<std::endl;
+    //std::cout << "SIZE TRUTH: "<< gen_eta->size()<< std::endl;
+    }
+
+
+
   }
 
 }

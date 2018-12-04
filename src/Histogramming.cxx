@@ -324,25 +324,25 @@ double Candidate::getYRes() { return y_res;}
 double Candidate::getRRes() { return r_res;}
 double Candidate::getESum() { return e_sum;} 
 
-double Average(std::vector<double>& V) {
+double Mean(std::vector<double>& V) {
 	/*Finds the mean (average) of a vector of doubles*/	
-	double mean = 0;
-	for (auto it = V.begin(); it != V.end(); ++it) {
-		mean += *it;
-	}
-	return mean / static_cast<double>(V.size());
+	double sum = std::accumulate(V.begin(), V.end(), 0.0);
+	return sum / static_cast<double>(V.size());
 }
 
 double Deviation(std::vector<double>& V, double& mean){
 	/*Finds the standard deviation of a vector given its mean.*/
-	double E=0;
-	double inv = 1.0 / static_cast<double>(V.size());
-	for (unsigned i =0; i < V.size(); ++i) { E += std::pow(V[i] - mean, 2); }
-	return std::sqrt(inv*E);
+	double sq_sum = 0;
+	for(unsigned n = 0; n < V.size() ; n++ )
+	{
+		sq_sum += (V[n] - mean) * (V[n] - mean);
+	}
+	sq_sum /= static_cast<double>(V.size());
+	return std::sqrt(sq_sum / static_cast<double>(V.size()) );
 } 
 
 std::vector<double> generate_R (const double& start, const double& stop, const double& inc) {
-	/*Generate a vector of decrase R*/
+	/*Generate a vector of decrease R*/
 	std::vector<double> tmp;
 	for (double r_tmp=start; r_tmp > stop; r_tmp -= inc ) { tmp.push_back(r_tmp); }
 	return tmp; 
@@ -351,63 +351,10 @@ std::vector<double> generate_R (const double& start, const double& stop, const d
 void HGCPlotting::FillAllHists( std::string name ){
 	/* RUN FOR EVERY __name__ IN EVERY EVENT */
 	
+	// MOVED to HGCPlotting.cxx
 	// Calculate TC readouts from root datastructure
-	CalculateTriggerCellVariables();
+	//CalculateTriggerCellVariables();
    
-	/*
-	 * TODO: 
-	 *		- Implement data structure (_event_variables ???) to hold values, from which S.D.'s are found.
-	 * */
-	//Vectors to store results (per event -> therefore temporary!) 
-	std::map<unsigned, std::vector<double>> ERes;  // r : vector<E_sum>/<>
-	std::map<unsigned, std::vector<double>> ESum; // 
-
-	/*Generate a vector of decreasing R*/
-	std::vector<double> Rs = generate_R(0.1, 0.005, 0.005); 
-	unsigned r_idx = 0;
-    
-	
-	// Initialise with vars
-	Candidate fCand( _event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
-	Candidate bCand( _event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(0));
-	// Import event details (readout)
-	fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
-	bCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
-	for (auto& r_curr : Rs) {	
-		// Crop everything outside r
-		fCand.crop(r_curr); 
-		// Do calculations
-		fCand.calculate_resolutions();
-		// Now we can get the data that we want 	  
-		//std::cout << "ERes/ESum" <<"\t\t" <<fCand.getERes() << "\\" << fCand.getESum() <<"\n"; 
-		//std::cout << "Position Res.\t" << fCand.getXRes() << "\n";
-
-		// Every event, ADD to ERes,ESum,
-		// NEED TO ADD THESE VALUES TO A GLOBAL data structure, such that they can be summed later, when 
-		// processes have finished for all events. 
-		ERes[r_idx].push_back(fCand.getERes());
-		ESum[r_idx].push_back(fCand.getESum());
-
-		//TODO implement for backward case ;)
-		//bCand.getERes(); 
-		// Increment loop (important!)
-		r_idx +=1;
-	}
-	
-
-	// THIS NEEDS TO BE OUTSIDE any LOOP!, I.e. run at the end!
-	std::vector<double> sig_E_E;
-	for (unsigned i=0; i<Rs.size(); ++i) {
-		// For each r;
-		double ave_res = Average(ERes[i]);
-		double ave_sum = Average(ESum[i]);	
-		//Debug
-		//std::cout << "R: "<< Rs[i] <<"\n"<< ave_res << "\t" << ave_sum << "\n";
-		
-		std::cout << "S.D.:\t" << Deviation(ERes[i], ave_res)<<"\n";
-		sig_E_E.push_back( Deviation(ERes[i], ave_res)  / ave_sum);
-		// Calc mean then S. Dev.
-	}
 
 
 	//if ( name == "PU0" ||  name == "PU200" )
@@ -451,7 +398,69 @@ void HGCPlotting::FillAllHists( std::string name ){
 		// Radius specific
 		//_cloned_hist [ name ] [ HIST NAME ] ->Fill ([_event_variables["bd_pos_E"]]); 
   
-  }
+	} else if ( name == "Radial_Reconstruction") {
+			
+	
+	/*
+	 * TODO: 
+	 *		- Implement data structure (_event_variables ???) to hold values, from which S.D.'s are found.
+	 * */
+	//Vectors to store results (per event -> therefore temporary!) 
+	std::map<unsigned, std::vector<double>> ERes;  // r : vector<E_sum>/<>
+	std::map<unsigned, std::vector<double>> ESum; // 
+
+	/*Generate a vector of decreasing R*/
+	std::vector<double> Rs = generate_R(0.1, 0.005, 0.005); 
+	unsigned r_idx = 0;
+    
+	
+	// Initialise with vars
+	Candidate fCand( _event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
+	Candidate bCand( _event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(0));
+	// Import event details (readout)
+	fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
+	bCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
+	for (auto& r_curr : Rs) {	
+		// Crop everything outside r
+		fCand.crop(r_curr); 
+		// Do calculations
+		fCand.calculate_resolutions();
+		// Now we can get the data that we want 	  
+		//std::cout << "ERes/ESum" <<"\t\t" <<fCand.getERes() << "\\" << fCand.getESum() <<"\n"; 
+		//std::cout << "Position Res.\t" << fCand.getXRes() << "\n";
+
+		// Every event, ADD to ERes,ESum,
+		// NEED TO ADD THESE VALUES TO A GLOBAL data structure, such that they can be summed later, when 
+		// processes have finished for all events. 
+		ERes[r_idx].push_back(fCand.getERes());
+		ESum[r_idx].push_back(fCand.getESum());
+
+		//TODO implement for backward case ;)
+		//bCand.getERes(); 
+		// Increment loop (important!)
+		r_idx +=1;
+	}
+	
+
+	// THIS NEEDS TO BE OUTSIDE any LOOP!, I.e. run at the end!
+	/*
+	std::vector<double> sig_E_E;
+	for (unsigned i=0; i<Rs.size(); ++i) {
+		// For each r;
+		double ave_res = Mean(ERes[i]);
+		double ave_sum = Mean(ESum[i]);	
+		double std_res = Deviation(ERes[i], ave_res); 
+		//Debug
+		std::cout << "R: "<< Rs[i] <<"\n"<< ave_res << "\t" << ave_sum << "\n";
+		std::cout << "S.D.:\t" << std_res<<"\n";
+		
+		
+
+		sig_E_E.push_back( Deviation(ERes[i], ave_res)  / ave_sum);
+		// Calc mean then S. Dev.
+	}*/
+		
+	}
 }
 
 

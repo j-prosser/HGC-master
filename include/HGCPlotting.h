@@ -44,18 +44,20 @@ class HGCPlotting : public BuildTreeBase {
   std::string _out_directory;
   TDirectory * _origDir ;
   
+  /*Globals in HGCPlotting*/
   int _max_events;
   std::vector<std::string> _HistoSets;
   TChain * _chain    ;  
-
-
 
   typedef std::map< std::string, TH1D* > histmap;
   typedef std::map< std::string, histmap > clonemap;
   typedef std::map< std::string, double > doublemap;
 
+
   clonemap _cloned_hists;  // map string -> histmap -> string-> TH1D
   doublemap _event_variables; // map string -> double
+
+
 
   // define vector of 
   typedef std::map<std::string, TH2D*> plot_2d_map;
@@ -63,6 +65,9 @@ class HGCPlotting : public BuildTreeBase {
   //doublemap _event_single;
   typedef std::map<std::string, std::vector<double>> vectormap;
   vectormap _event_details; // map of vectors
+  
+  vectormap _radial_reconstruction; 
+
   plot_2d_map _2d_plots; 
 
  public :
