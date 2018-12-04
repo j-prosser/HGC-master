@@ -105,7 +105,7 @@ class HGCPlotting : public BuildTreeBase {
 
   void CalculateReducedCircle(const double& R);
 
-  void CalculateCircleStats();
+  void CalculateCircleStats( std::string _output_directory );
 
   void FillAllHists( std::string name );
 

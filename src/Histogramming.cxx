@@ -408,7 +408,7 @@ void HGCPlotting::FillAllHists( std::string name ){
 	//std::map<unsigned, std::vector<double>> ESum; // 
 
 	/*Generate a vector of decreasing R (for each event)*/
-	std::vector<double> Rs = generate_R(0.1, 0.005, 0.005); 
+	std::vector<double> Rs = generate_R(0.1, 0.005, 0.002); 
 	
 	unsigned r_idx = 0;
     
@@ -462,7 +462,7 @@ void HGCPlotting::FillAllHists( std::string name ){
 	}
 }
 
-void HGCPlotting::CalculateCircleStats() {
+void HGCPlotting::CalculateCircleStats( std::string out_directory ) {
 	/*Does stuff on _radial_reconstruction dataset*/
 	/*Output onto _radial_results*/
 	for (auto& r_pair : _radial_reconstruction["e_sum"]) {
@@ -488,8 +488,9 @@ void HGCPlotting::CalculateCircleStats() {
 	// TVector<float> tvf(svf.size(), &svf[0]);
 	TVectorD tv_r(tmp_r.size(), &tmp_r[0]);	
 	TVectorD tv_sigee(tmp_sigee.size(), &tmp_sigee[0]);
+	std::cout << (out_directory + "testout.root").c_str() << std::endl;
 
-	TFile f("testout.root","RECREATE");
+	TFile f(("output/" + out_directory + "/testout.root").c_str(),"RECREATE");
 	f.cd();
 	//TGraph g(10);
 	_graphs["test"] = new TGraph( tv_r,tv_sigee );  
