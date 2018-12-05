@@ -207,7 +207,7 @@ void HGCPlotting::Loop( ){
 		std::cout << "\n";
 	}  
 
-	CalculateCircleStats();
+	CalculateCircleStats( _out_directory );
 	/*Now Fill scatter plot*/
 
 
