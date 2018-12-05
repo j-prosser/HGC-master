@@ -13,9 +13,7 @@ void HGCPlotting::MakeAllHists( std::vector<std::string> &HistoSets){
             LoadHistoTemplates (names);
 			std::cout << "\t" << names << "\n";
     }  
-
 }
-
 	
 // TH1D Syntax: new TH1D(name, title, nbinsx, xlow, xhigh) ; xlow-> edge of lowest bin, xhigh -> edge of highest bin
 // or: new TH1D(name, title, nbinsx, xbins) ; xbins -> low edge of of everybin, contains nbinsx+1 entries. 
@@ -47,7 +45,7 @@ void HGCPlotting::LoadHistoTemplates( std::string name ) {
 		//_cloned_hists[ name ] [ "dpos_Y" ] = new TH1D ( (name + "_dpos_y").c_str(), "", 150, -.04,.04);
 		//_cloned_hists[ name ] [ "dpos_X_E" ] = new TH1D ( (name + "_dpos_x_E").c_str(), "", 150, -.04,.04);
 		//_cloned_hists[ name ] [ "dpos_Y_E" ] = new TH1D ( (name + "_dpos_y_E").c_str(), "", 150, -.04,.04);
-		//_cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);											   
+		_cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);											   
 	} else if ( name == "Radial_Reconstruction" )  { 
 	_graphs["sig_e_e_r"] = new TGraph(); // n,x,y	
 	}
