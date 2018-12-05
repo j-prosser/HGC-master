@@ -340,7 +340,7 @@ double Deviation(std::vector<double>& V, double& mean){
 		sq_sum += (V[n] - mean) * (V[n] - mean);
 	}
 	sq_sum /= static_cast<double>(V.size());
-	return std::sqrt(sq_sum / static_cast<double>(V.size()) );
+	return std::sqrt(sq_sum);
 } 
 
 std::vector<double> generate_R (const double& start, const double& stop, const double& inc) {
@@ -488,7 +488,6 @@ void HGCPlotting::CalculateCircleStats( std::string out_directory ) {
 	// TVector<float> tvf(svf.size(), &svf[0]);
 	TVectorD tv_r(tmp_r.size(), &tmp_r[0]);	
 	TVectorD tv_sigee(tmp_sigee.size(), &tmp_sigee[0]);
-	std::cout << (out_directory + "testout.root").c_str() << std::endl;
 
 	TFile f(("output/" + out_directory + "/testout.root").c_str(),"RECREATE");
 	f.cd();
