@@ -60,7 +60,7 @@ class HGCPlotting : public BuildTreeBase {
 
 
   // define vector of 
-  typedef std::map<std::string, TH2D*> plot_2d_map;
+	typedef std::map<std::string, TH2D*> plot_2d_map;
 	typedef std::map<std::string, TGraph*> map_tgraphs;
 
 
