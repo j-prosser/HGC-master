@@ -3,7 +3,6 @@
 #include <cmath> 
 
 #include <candidate.h>
-#include <algorithm> // For remove_if
 #include <TVectorD.h> 
 
 
@@ -15,8 +14,8 @@ void HGCPlotting::MakeAllHists( std::vector<std::string> &HistoSets){
 			std::cout << "\t" << names << "\n";
     }  
 }
-	
-// TH1D Syntax: new TH1D(name, title, nbinsx, xlow, xhigh) ; xlow-> edge of lowest bin, xhigh -> edge of highest bin
+// TH1D Syntax: new TH1D(name, title, nbinsx, xlow, xhigh) 
+//		xlow-> edge of lowest bin, xhigh -> edge of highest bin
 // or: new TH1D(name, title, nbinsx, xbins) ; xbins -> low edge of of everybin, contains nbinsx+1 entries. 
 
 void HGCPlotting::LoadHistoTemplates( std::string name ) { 
@@ -48,13 +47,10 @@ void HGCPlotting::LoadHistoTemplates( std::string name ) {
 		//_cloned_hists[ name ] [ "dpos_Y_E" ] = new TH1D ( (name + "_dpos_y_E").c_str(), "", 150, -.04,.04);
 		_cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);											   
 	} else if ( name == "Radial_Reconstruction" )  { 
-	_graphs["sig_e_e_r"] = new TGraph(); // n,x,y	
+	//_graphs["sig_e_e_r"] = new TGraph(); // n,x,y	
+	// NO NEED TO INITALISE GRAPHS HERE!
 	}
 }
-
-
-
-
 void HGCPlotting::CalculateTriggerCellVariables() {
 	/*Calculates the Basic trigger readouts, without doing intensive calculations!*/
 	
@@ -66,7 +62,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	double exsum_backward = 0;
 	double eysum_backward = 0;
   
-	// intialise _Event_details by deleting
+	// intialise _Event_details by deleting, for every loop!
 	_event_details.clear();
 	
 	// LOOP OVER ALL ENTRIES
@@ -76,33 +72,30 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 		//FORWARD
 		exsum_forward += tc_pt->at(i)*std::cos(tc_phi->at(i));
 		eysum_forward += tc_pt->at(i)*std::sin(tc_phi->at(i));
-		
+		//
 		_event_details["fX"].push_back( tc_x->at(i) / tc_z->at(i) ); 
 		_event_details["fY"].push_back( tc_y->at(i) / tc_z->at(i) );
 		_event_details["fP"].push_back( tc_pt->at(i) ); 
-		
 		} else {
 		//BACKWARD
 		exsum_backward += tc_pt->at(i)*std::cos(tc_phi->at(i));
 		eysum_backward += tc_pt->at(i)*std::sin(tc_phi->at(i));
-		
 		//
 		_event_details["bX"].push_back(- tc_x->at(i) / tc_z->at(i) );
 		_event_details["bY"].push_back(- tc_y->at(i) / tc_z->at(i) );
 		_event_details["bP"].push_back( tc_pt->at(i) );
-
 		}
 	}
-
-	double ersum_forward = std::sqrt( exsum_forward*exsum_forward + eysum_forward*eysum_forward ); // forward energy sum in r
-	double ersum_backward = std::sqrt( exsum_backward*exsum_backward + eysum_backward*eysum_backward ); // backward energy sum in r
-	//std::cout << "er_sum_forward " << ersum_forward << std::endl; //yoyo-db  
-  
+	/* Total energy sums in r, forward & backward*/
+	double ersum_forward = std::sqrt( exsum_forward*exsum_forward + eysum_forward*eysum_forward );
+	double ersum_backward = std::sqrt( exsum_backward*exsum_backward + eysum_backward*eysum_backward );
+	  
+	/* Total energy sum in phi, forwar & backward*/ 
 	// std::atan2 -> arctan(y/x), uses signs of y,x to find the correct quadrant!
-	// sum of energy in phi
 	double ephisum_forward = std::atan2( eysum_forward, exsum_forward ); 
     double ephisum_backward = std::atan2( eysum_backward, eysum_backward );  
 
+	/* Save calculated variables to be used in histograms */
 	_event_variables[  "ex_sum_forward"  ] = exsum_forward;
 	_event_variables[  "ey_sum_forward"  ] = eysum_forward;
 	_event_variables[  "er_sum_forward"  ] = ersum_forward;
@@ -113,39 +106,40 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	_event_variables[  "er_sum_backward"  ] = ersum_backward;
 	_event_variables[  "ephi_sum_backward"  ] = ephisum_backward;
 
-	//Difference betwen photon truth phi and MET
+	/* Naive Calculations between the TRUTH and the measured values to find the difference in measured phi
+	 * and truth phi */
+	// Declare temp variables
 	TVector2 met, truth; // init measured, truth 2-d (x-y) vectors
+	double dphi_met; 
+	// Forward Case
 	met.Set( exsum_forward, eysum_forward ); 
 	truth.SetMagPhi( 1, gen_phi->at(0) ); // gen_phi is the TRUTH VALUE for phi.
-	// Find angle (in phi) between met & truth; Named dphi_met (delta-phi)
-	double dphi_met = met.DeltaPhi( truth );
+	dphi_met = met.DeltaPhi( truth );
 	_event_variables[  "dphi_met_forward"  ] =  dphi_met;
-	// SAME for backward!!
+	// Backward Case
 	met.Set( exsum_backward, eysum_backward );
 	truth.SetMagPhi( 1, gen_phi->at(1) );
 	dphi_met = met.DeltaPhi( truth );
-	 _event_variables[  "dphi_met_backward"  ] =  dphi_met;
- 
-	//delta-energy (denergy), need forward and back! 
-	// CHANGE to er_sum MINUS pen_pt ... 
+	_event_variables[  "dphi_met_backward"  ] =  dphi_met;
+	/* Naive calculation for difference in measured energy and truth energy */
 	_event_variables["denergy_forward"] = ersum_forward - gen_pt->at(0);
 	_event_variables["denergy_backward"] = ersum_backward - gen_pt->at(1);
 
 	/*FIND TRUTH VALUES*/ 
-	// in our normalised co-ordinates  
+	// in our normalised co-ordinates, Y = y/z, X = x/z
 	_event_variables["xnft"] = std::cos(gen_phi->at(0)) / sinh(gen_eta->at(0));
 	_event_variables["ynft"] = std::sin(gen_phi->at(0)) / sinh(gen_eta->at(0));
 	_event_variables["xnbt"] = std::cos(gen_phi->at(0)) / sinh(gen_eta->at(1)); 
 	_event_variables["ynbt"] = std::sin(gen_phi->at(0)) / sinh(gen_eta->at(1));  
-
-	//std::cout << gen_eta->at(0) << "\t" << gen_eta->at(1)<<"\n"; 
 }
+
+/* Mean and Standard Deviation calculations for a vector of double,
+ * (could implement a template such that any data_type coulde be used) */
 double Mean(std::vector<double>& V) {
 	/*Finds the mean (average) of a vector of doubles*/	
 	double sum = std::accumulate(V.begin(), V.end(), 0.0);
 	return sum / static_cast<double>(V.size());
 }
-
 double Deviation(std::vector<double>& V, double& mean){
 	/*Finds the standard deviation of a vector given its mean.*/
 	double sq_sum = 0;
@@ -165,8 +159,10 @@ std::vector<double> generate_R (const double& start, const double& stop, const d
 }
 
 void HGCPlotting::FillAllHists( std::string name ){
-	/* RUN FOR EVERY __name__ IN EVERY EVENT */
-	
+	/* Method to Fill histograms and perform other functions for specified 'name' in _HistoSets */
+	/* RUN FOR EVERY __name__ IN EVERY EVENT */	
+	// syntax for filling an ininialised histogram below.:
+		//_cloned_hist [ name ] [ HIST NAME ] ->Fill ([_event_variables["var_name"]]); 
 	if ( name == "TriggerCells" ){
 		// Visualise TCs...
 		for (unsigned int i = 0; i < tc_eta->size(); i++){
@@ -180,32 +176,16 @@ void HGCPlotting::FillAllHists( std::string name ){
 		_cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_forward"  ] );
 	    _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_forward"  ] );
 		_cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_forward"  ] );
-		//std::cout << _event_variables["er_sum_forward"] << std::endl;//yoyo-db  
 	    _cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_forward"  ] );        
 		_cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_forward"  ] );    
-		_cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_forward"] );
-		        
-			 // Radius specific histograms, position, energy resolutions
-			 //_cloned_hists[ name ] [ "dpos_2" ] ->Fill(_event_variables["fd_pos_E"]);
-			 //_cloned_hists[ name ] [ "dpos" ] ->Fill(_event_variables["fd_pos"]);
-			 // Redacted momentum weight
-			 //_cloned_hists[ name ] [ "dpos_X" ] ->Fill(_event_variables["fX_weighted_pt"]- _event_variables["xnft"]);
-		     //_cloned_hists[ name ] [ "dpos_Y" ] ->Fill(_event_variables["fY_weighted_pt"] - _event_variables["ynft"]);
-			 //_cloned_hists[ name ] [ "dpos_X_E" ] ->Fill(_event_variables["fX_weighted_Et"]- _event_variables["xnft"]);
-		     //_cloned_hists[ name ] [ "dpos_Y_E" ] ->Fill(_event_variables["fY_weighted_Et"] - _event_variables["ynft"]);
-
+		_cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_forward"] );        
 	} else if ( name == "PU0_backward" ){
-		//_cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
 		_cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_backward"  ] );
 	    _cloned_hists[ name ] [ "ey_sum" ] ->Fill (  _event_variables[  "ey_sum_backward"  ] );
 	    _cloned_hists[ name ] [ "er_sum" ] ->Fill (  _event_variables[  "er_sum_backward"  ] );
 		_cloned_hists[ name ] [ "ephi_sum" ] ->Fill (  _event_variables[  "ephi_sum_backward"  ] );   
 		_cloned_hists[ name ] [ "dphi_met" ] ->Fill (  _event_variables[  "dphi_met_backward"  ] );                
 		_cloned_hists[ name ] [ "denergy" ] ->Fill ( _event_variables[ "denergy_backward"] );
-		//_cloned_hists[ name ] [ "dpos" ] ->Fill( _event_variables["bd_pos"]);
-		// Radius specific
-		//_cloned_hist [ name ] [ HIST NAME ] ->Fill ([_event_variables["bd_pos_E"]]); 
-  
 	} else if ( name == "Radial_Reconstruction") {
 		/*Routine to calculate each event*/		
 	
@@ -217,8 +197,7 @@ void HGCPlotting::FillAllHists( std::string name ){
 		std::vector<double> Rs = generate_R(0.1, 0.005, 0.002); 
 		//std::vector<double> ETAs = generate_R(3.0, 1.47, 0.51);
 
-
-		// Initialise with vars
+		// Initialise with TRUTH values, could use seeds here? 
 		Candidate fCand( _event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
 		Candidate bCand( _event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(1));
 
@@ -277,9 +256,6 @@ void HGCPlotting::FillAllHists( std::string name ){
 	}
 }
 
-
-
-
 void HGCPlotting::CalculateCircleStats(  ) {
 	/*Does stuff on _radial_reconstruction dataset*/
 	/*Output onto _radial_results*/
@@ -318,7 +294,6 @@ void HGCPlotting::CalculateCircleStats(  ) {
 
 
 void HGCPlotting::GraphReducedCircle(stringdoublemap& dataset, std::string graph_name){
-	
 	/*Does stuff on dataset dataset*/
 	/*Output onto tmp_results*/
 	stringdoubledouble tmp_results;
@@ -359,8 +334,5 @@ void HGCPlotting::GraphReducedCircle(stringdoublemap& dataset, std::string graph
 
 
 /* TODO: 
- *  *	- Implement scheme to split results by eta
- *		- Where to store eta data?
- *		- How to store these results.
  *	- Implement a way / variable to seed
  * */
