@@ -277,10 +277,10 @@ void HGCPlotting::FillAllHists( std::string name ){
 		//_cloned_hist [ name ] [ HIST NAME ] ->Fill ([_event_variables["bd_pos_E"]]); 
   
 	} else if ( name == "Radial_Reconstruction") {
-		
-
-	// USE: _radial_reconstruction INSTEAD, <std::string, vector<double> >
-	/*Generate a vector of decreasing R (for each event)*/
+		/*Routine to calculate each event*/		
+	
+		// USE: _radial_reconstruction INSTEAD, <std::string, vector<double> >
+		/*Generate a vector of decreasing R (for each event)*/
 		// Define range of R's to be calculated
 
 		//Move this to a different scope?
@@ -288,11 +288,11 @@ void HGCPlotting::FillAllHists( std::string name ){
 		//std::vector<double> ETAs = generate_R(3.0, 1.47, 0.51);
 
 
-	// Initialise with vars
+		// Initialise with vars
 		Candidate fCand( _event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
 		Candidate bCand( _event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(1));
 
-	// Import event details (readout)
+		// Import event details (readout)
 		fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
 		bCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
 		
@@ -318,20 +318,21 @@ void HGCPlotting::FillAllHists( std::string name ){
 			_radial_reconstruction["e_res"][r_curr].push_back( bCand.getERes() );
 			_radial_reconstruction["e_sum"][r_curr].push_back( fCand.getESum() );
 			_radial_reconstruction["e_sum"][r_curr].push_back( bCand.getESum() );
+             
 
 			//Separate by ETA, assume; gen_eta_forward == -gen_eta_backward 
-			if (1.47<= _event_variables["feta"] &&  _event_variables["feta"] < 1.98) {
+			if (1.47<= gen_eta->at(0) &&  gen_eta->at(0) < 1.98) {
 				_radial_eta_reconstruction["1.47_1.98"]["e_res"][r_curr].push_back(fCand.getERes());
 				_radial_eta_reconstruction["1.47_1.98"]["e_res"][r_curr].push_back(bCand.getERes());		
 				_radial_eta_reconstruction["1.47_1.98"]["e_sum"][r_curr].push_back(fCand.getESum());
 				_radial_eta_reconstruction["1.47_1.98"]["e_sum"][r_curr].push_back(bCand.getESum());
-			} else if (1.98 <= _event_variables["feta"] && _event_variables["feta"] < 2.49) {
+			} else if (1.98 <= gen_eta->at(0) && gen_eta->at(0) < 2.49) {
 			
 				_radial_eta_reconstruction["1.98_2.49"]["e_res"][r_curr].push_back(fCand.getERes());
 				_radial_eta_reconstruction["1.98_2.49"]["e_res"][r_curr].push_back(bCand.getERes());		
 				_radial_eta_reconstruction["1.98_2.49"]["e_sum"][r_curr].push_back(fCand.getESum());
 				_radial_eta_reconstruction["1.98_2.49"]["e_sum"][r_curr].push_back(bCand.getESum());
-			} else if (2.49 <= _event_variables["feta"] && _event_variables["feta"] < 3.00) {
+			} else if (2.49 <= gen_eta->at(0) && gen_eta->at(0) < 3.00) {
 			
 				_radial_eta_reconstruction["1.98_3.00"]["e_res"][r_curr].push_back(fCand.getERes());
 				_radial_eta_reconstruction["1.98_3.00"]["e_res"][r_curr].push_back(bCand.getERes());		
@@ -345,6 +346,9 @@ void HGCPlotting::FillAllHists( std::string name ){
 		
 	}
 }
+
+
+
 
 void HGCPlotting::CalculateCircleStats(  ) {
 	/*Does stuff on _radial_reconstruction dataset*/
@@ -383,12 +387,49 @@ void HGCPlotting::CalculateCircleStats(  ) {
 }
 
 
-void HGCPlotting::CalculateCircleStats(int eta_n) {
-/*Implement method to circle stats for a range of ETAs*/
-	// How to sort by eta
-}	
+void HGCPlotting::GraphReducedCircle(stringdoublemap& dataset, std::string graph_name){
+	
+	/*Does stuff on dataset dataset*/
+	/*Output onto tmp_results*/
+	stringdoubledouble tmp_results;
+
+	for (auto& r_pair : dataset["e_sum"]) {
+		tmp_results["mean_e_sum"][r_pair.first] = Mean(r_pair.second);
+	}
+
+	/*TEMP vectors for plotting*/
+	std::vector<double> tmp_r;
+	std::vector<double> tmp_sigee; 
+	for (auto & r_pair : dataset["e_res"]) {
+		/*Find the mean, */ 
+		tmp_results["mean_e_res"][r_pair.first] = Mean(r_pair.second); 
+		tmp_results["stdev_e_res"][r_pair.first] = Deviation(r_pair.second, tmp_results["mean_e_res"][r_pair.first] );
+		//std::cout << r_pair.first << "\t" << "Mean e_res " << Mean(r_pair.second) << "\n";
+		tmp_results["sig_e_e"][r_pair.first] = tmp_results["stdev_e_res"][r_pair.first] / tmp_results["mean_e_sum"][r_pair.first]; 
+		/*Print results?*/
+		//std::cout << r_pair.first << "\t" << "sigma_E/E\t" << tmp_results["sig_e_e"][r_pair.first] << "\n"; 	
+		tmp_r.push_back(r_pair.first);
+		tmp_sigee.push_back(tmp_results["sig_e_e"][r_pair.first]); 
+	}
+
+	/*Plottign Stuff -> Move somewhere else!?*/ 
+	//Make some plots! 
+	// TVector<float> tvf(svf.size(), &svf[0]);
+	/*Convert from std::vector<double> to TVectorD*/
+	TVectorD tv_r(tmp_r.size(), &tmp_r[0]);	
+	TVectorD tv_sigee(tmp_sigee.size(), &tmp_sigee[0]);
+
+	/*Add graph to map of graphs created*/
+	graph_name = "sigma_EE_r_"+graph_name; 
+	std::cout << "Graphing:\t" << graph_name <<"\n";
+	_graphs[graph_name] = new TGraph( tv_r,tv_sigee );  
+	_graphs[graph_name]->SetName(graph_name.c_str()); //set name of plot!
+	/*Perhaps add other stuff like a title*/
+}
+
+
 /* TODO: 
- *	- Implement scheme to split results by eta
+ *  *	- Implement scheme to split results by eta
  *		- Where to store eta data?
  *		- How to store these results.
  *	- Implement a way / variable to seed

@@ -35,8 +35,14 @@ Imperial College
 #include <iomanip>
 #include <cmath>
 
+
+typedef std::map< std::string, std::map<double, double> > stringdoubledouble;
+typedef std::map<std::string, std::map<double,std::vector<double>>> stringdoublemap;
+
 class HGCPlotting : public BuildTreeBase {
- private :
+	public: 
+		
+	private :
   
   /***** General *****/
   CmdLine * _cmd ;
@@ -59,16 +65,15 @@ class HGCPlotting : public BuildTreeBase {
 
 
 
-  // define vector of 
+	// define vector of 
 	typedef std::map<std::string, TH2D*> plot_2d_map;
 	typedef std::map<std::string, TGraph*> map_tgraphs;
 
 
   //doublemap _event_single;
-  typedef std::map<std::string, std::vector<double>> vectormap;
+	typedef std::map<std::string, std::vector<double>> vectormap;
   
-  typedef std::map<double, std::vector<double>> doublevectormap;
-  typedef std::map<std::string, std::map<double,std::vector<double>>> stringdoublemap;
+	typedef std::map<double, std::vector<double>> doublevectormap;
 
   /* string : double : vector(doubles) 
    * data_id : r_curr : vector(data) */
@@ -76,7 +81,6 @@ class HGCPlotting : public BuildTreeBase {
   
   vectormap _event_details; // map of vectors 
 
-  typedef std::map< std::string, std::map<double, double> > stringdoubledouble;
   stringdoubledouble _radial_results;
 
 	// Datastructures for eta-separated radial reconstruction...
@@ -112,7 +116,9 @@ class HGCPlotting : public BuildTreeBase {
   //void CalculateReducedCircle(const double& R);
 
   void CalculateCircleStats();
-  void CalculateCircleStats(int eta_n); // eta_n-> number of eta increments? 
+
+  
+  void GraphReducedCircle(stringdoublemap& dataset, std::string graph_name);
 
   void FillAllHists( std::string name );
 
