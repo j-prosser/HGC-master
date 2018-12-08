@@ -208,15 +208,12 @@ void HGCPlotting::Loop( ){
 	}  
 
 	/*Calculate SigmaE/E versus R*/
-	//CalculateCircleStats( );
+	CalculateCircleStats( );
 
+	/*Calculate SigmaE/E versus R for increments in eta*/
 	for (auto& eta_selection: _radial_eta_reconstruction){
-		
-		std::cout << "WTF" << "\n";
-		std::cout << eta_selection.first << std::endl;
 		GraphReducedCircle(eta_selection.second,eta_selection.first);
 	}
-	/*Calculate SigmaE/E versus R for increments in eta*/
 	
 }
 
