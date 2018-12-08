@@ -87,8 +87,8 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 		eysum_backward += tc_pt->at(i)*std::sin(tc_phi->at(i));
 		
 		//
-		_event_details["bX"].push_back( tc_x->at(i) / tc_z->at(i) );
-		_event_details["bY"].push_back( tc_y->at(i) / tc_z->at(i) );
+		_event_details["bX"].push_back(- tc_x->at(i) / tc_z->at(i) );
+		_event_details["bY"].push_back(- tc_y->at(i) / tc_z->at(i) );
 		_event_details["bP"].push_back( tc_pt->at(i) );
 
 		}
@@ -138,122 +138,6 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	_event_variables["xnbt"] = std::cos(gen_phi->at(0)) / sinh(gen_eta->at(1)); 
 	_event_variables["ynbt"] = std::sin(gen_phi->at(0)) / sinh(gen_eta->at(1));  
 
-	/* Debug for position Resolution */
-        //std::cout <<  "T: "<<_event_variables["xnbt" ]<< " | "<< _event_variables["ynbt"] << std::endl; 
-	//std::cout << "C: "<< _event_variables["bX_weighted_pt"]<< " | " <<_event_variables["bY_weighted_pt"] << std::endl;
-	//std::cout << _event_variables["bX_sum"]<<std::endl;
-	//std::cout << std::endl;    
-}
-
-
-
-void HGCPlotting::CalculateReducedCircle(const double& R) {
-	/*DEPRECATED METHOD FOR FINDING THE TCs INSIDE CIRCLE R, USE 'Candidate' method*/
-	/* Calculates values for energy/ position resolution in the circle of radius R = r/z_0 */
-	
-	// Loop to create circle and _event_details
-	//double av_pt_xy=0; // expectation value of pt (?)
-	// init for the weighted sums
-	_event_variables["fX_weighted_pt"] = 0;
-	_event_variables["fY_weighted_pt"] = 0;
-    _event_variables["fY_sum"] = 0 ;
-    _event_variables["fX_sum"] = 0;	
-    _event_variables["bX_weighted_pt"] = 0;
-	_event_variables["bY_weighted_pt"] = 0;
-	_event_variables["fY_weighted_Et"] = 0;
-	_event_variables["fX_weighted_Et"] = 0;
-	_event_variables["bX_sum"] = 0;
-	_event_variables["bY_sum"] = 0; 
-	_event_variables["fE_sum"] = 0;
-    _event_variables["bE_sum"] = 0; 
-
-	// Loop over all TCs in a single event
-	for (unsigned j=0; j < tc_pt->size(); j++){ 
-		//double tmpphi = tc_eta->at(j);   
-		double tmpx,tmpy,tmppt;
-		tmpx = tc_x->at(j) / tc_z->at(j);
-		tmpy = tc_y->at(j) / tc_z->at(j);
-		tmppt = tc_pt->at(j);
-
-		/* pt in X and Y directions*/
-		//tmpptx = tmppt*std::cos(tmpphi); 
-        //tmppty = tmppt*std::sin(tmpphi);
-
-		// Choose Between Forward and backward
-		if (tc_eta->at(j) > 0) { /* FORWARD: Implemented sum(p_x.x)/sum(p_x)*/
- 
-			//std::cout << tmpx << "|" << tmpy << "|" << tmppt << std::endl;
-			//std::cout <<"tc_x"<< tc_x->at(j) <<std::endl;
-	 
-			_event_details["xnf"].push_back(tmpx); 
-			_event_details["ynf"].push_back(tmpy);
-			_event_details["ptf"].push_back(tmppt);
-		
-			/* CHECK IF TC IS IN RADIUS R
-			 * (X-X_t)^2 + (Y-Y_t)^2 < R^2 */
-			if ( (tmpx-_event_variables["xnft"])*(tmpx-_event_variables["xnft"]) 
-					+ (tmpy - _event_variables["ynft"])*(tmpy - _event_variables["ynft"]) < R*R ) {
-				
-				/*Add TC variables to vectors */
-				/* Fill Candidate Arrays */
-				_event_details["xnfc"].push_back( tmpx );
-				_event_details["ynfc"].push_back( tmpy );
-				_event_details["ptfc"].push_back( tmppt );
-		  		
-				_event_variables["fE_sum"] +=tmppt;
-				_event_variables["fX_weighted_Et"] += tmpx*tmppt;
-				_event_variables["fY_weighted_Et"] += tmpy*tmppt;
-			}
-
-		} else { /* Backward: IMPLEMENTED sum(pt.x)/sum(pt)*/
-			/*Invert co-ordinates for no good reason*/
-			tmpx = -tmpx; tmpy = -tmpy;
-             
-			_event_details["xnb"].push_back(tmpx);
-			_event_details["ynb"].push_back(tmpy);
-			_event_details["ptb"].push_back(tmppt);
-        	
-            //std::cout << "tmp x,y: " << tmpx<<","<<tmpy<<std::endl;
-			//std::cout << "e.v. TRUTH: x,y: "<<_event_variables["xnbt"]<<","<<_event_variables["ynbt"]<<std::endl;
-			
-			/* Check if in radius */
-			if ( (tmpx - _event_variables["xnbt"])*(tmpx - _event_variables["xnbt"]) 
-					+(tmpy - _event_variables["ynbt"])*(tmpy - _event_variables["ynbt"]) < R*R ) {
-				/* Fill Candidate Arrays */
-				_event_details["xnbc"].push_back(tmpx);
-				_event_details["ynbc"].push_back(tmpy);
-				_event_details["ptbc"].push_back(tmppt);
-
-				/*Add position resolution calculations here to form sum of pt.x */
-				_event_variables["bX_weighted_Et"] += tmppt*tmpx;
-				_event_variables["bY_weighted_Et"] += tmppt*tmpy;	
-				_event_variables["bE_sum"] += tmppt;
-			} 
-		}
-	} /* end of loop*/
-	
-	/* Forward Calorimeter XY-position resolution weighted by energy*/
-	_event_variables["fX_weighted_Et"] /= _event_variables["fE_sum"];
-	_event_variables["fY_weighted_Et"] /= _event_variables["fE_sum"]; 	
-	/* Forward radial resolution */	
-	_event_variables["fd_pos_E"] = std::sqrt( 
-			(_event_variables["fX_weighted_Et"]-_event_variables["xnft"]) 
-			*(_event_variables["fX_weighted_Et"] - _event_variables["xnft"]) 
-			+ (_event_variables["fY_weighted_Et"] - _event_variables["ynft"])
-			*(_event_variables["fY_weighted_Et"] - _event_variables["ynft"]) ); 
-    	
-	/* Backward Calorimeter XY-position resolution weighted by energy*/
-	_event_variables["bX_weighted_Et"] /= _event_variables["bE_sum"];
-	_event_variables["bY_weighted_Et"] /= _event_variables["bE_sum"];
-	/* Backward radial resolution */	
-	_event_variables["bd_pos_E"] = std::sqrt(
-			(_event_variables["bX_weighted_Et"] - _event_variables["xnbt"])
-			*(_event_variables["bX_weighted_Et"] - _event_variables["xnbt"])
-			+(_event_variables["bY_weighted_Et"] - _event_variables["ynbt"])
-			*(_event_variables["bY_weighted_Et"] - _event_variables["ynbt"]) ); 
-    /*difference in energy for circle*/
-	_event_variables["fd_energy_R"] = _event_variables["fE_sum"] - gen_pt->at(0);
-	_event_variables["bd_energy_R"] = _event_variables["bE_sum"] - gen_pt->at(1);
 }
 
 /*Constructor saves the truth value to instance variables*/
@@ -292,21 +176,24 @@ void Candidate::crop(const double& R) {
 	/*Removes entries in the _Entries if outside circle!*/
 	_R = R;	
 	// Delete entries which are outside circle
+	//std::cout << _Entries.size() <<"\t";
 	_Entries.erase( 
 			std::remove_if ( _Entries.begin(), _Entries.end(), inCircle(_R, _XT, _YT) ),
 			_Entries.end() 
-		);	
+		);
+	//std::cout << _Entries.size() << "\n";
 } 
 
 void Candidate::calculate_resolutions() {
 	/*Calculate the e_res, x_res, y_res, e_sum*/
 	// Initialise result doubles to zero.
 	e_res =0; x_res=0; y_res=0; r_res=0; e_sum=0;	
+	
 	// Loop over all candidate entries
-	for(auto const& e: _Entries) {
-		// weighted sums 
+	for(auto const& e: _Entries) {// weighted sums 
 		e_sum += e.p; x_res += e.p*e.x; y_res += e.p*e.y; 
 	}
+	
 	// Divide by weights to obtain weighted average
 	x_res /= e_sum; y_res /= e_sum;
     // Energy resolution -> Sum(E) - E_truth	
@@ -389,82 +276,92 @@ void HGCPlotting::FillAllHists( std::string name ){
 		//_cloned_hist [ name ] [ HIST NAME ] ->Fill ([_event_variables["bd_pos_E"]]); 
   
 	} else if ( name == "Radial_Reconstruction") {
-
-	//Vectors to store results (per event -> therefore temporary!) 
 	// USE: _radial_reconstruction INSTEAD, <std::string, vector<double> >
-	//std::map<unsigned, std::vector<double>> ERes;  // r : vector<E_sum>/<>
-	//std::map<unsigned, std::vector<double>> ESum; // 
-
 	/*Generate a vector of decreasing R (for each event)*/
+		// Define range of R's to be calculated
+
+		//Move this to a different scope?
 		std::vector<double> Rs = generate_R(0.1, 0.005, 0.002); 
-	
-		unsigned r_idx = 0;
-    
-	
+		
 	// Initialise with vars
 		Candidate fCand( _event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
-		Candidate bCand( _event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(0));
+		Candidate bCand( _event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(1));
+
 	// Import event details (readout)
 		fCand.importDetails(_event_details["fX"], _event_details["fY"], _event_details["fP"]);
 		bCand.importDetails(_event_details["bX"], _event_details["bY"], _event_details["bP"]);
+		
+		unsigned r_idx = 0;
 		for (auto& r_curr : Rs) {	
 			// Crop everything outside r
 			fCand.crop(r_curr); 
+			bCand.crop(r_curr);
 			// Do calculations
 			fCand.calculate_resolutions();
-			// Now we can get the data that we want 	  
-			//std::cout << "ERes/ESum" <<"\t\t" <<fCand.getERes() << "\\" << fCand.getESum() <<"\n"; 
-			//std::cout << "Position Res.\t" << fCand.getXRes() << "\n";
-
+			bCand.calculate_resolutions();
+			// Now we can get the data that we want 
+			if (0) {
+				//DEBUG	
+				std::cout << r_curr<<"\n";	  
+				std::cout << "fERes/ESum" <<"\t\t" <<fCand.getERes() << "\\" << fCand.getESum() <<"\n"; 
+				std::cout << "fPosition Res.\t" << fCand.getXRes() << "\n";
+				std::cout << "bERes/ESum" <<"\t\t" <<bCand.getERes() << "\\" << bCand.getESum() <<"\n"; 
+				std::cout << "bPosition Res.\t" << bCand.getXRes() << "\n";
+			}
 			// NEED TO ADD THESE VALUES TO A GLOBAL data structure, such that they can be summed later, when 
 			// processes have finished for all events. 
 			// USE _radial_reconstruction
-			_radial_reconstruction["e_res"][r_curr].push_back(fCand.getERes());
-			_radial_reconstruction["e_sum"][r_curr].push_back(fCand.getESum());
+			_radial_reconstruction["e_res"][r_curr].push_back(fCand.getERes() );
+			_radial_reconstruction["e_res"][r_curr].push_back(bCand.getERes() );
+			_radial_reconstruction["e_sum"][r_curr].push_back(fCand.getESum() );
+			_radial_reconstruction["e_sum"][r_curr].push_back(bCand.getESum() );
 
-			//TODO implement for backward case ;)
-			//bCand.getERes(); 
 			// Increment loop (important!)
 			r_idx +=1;
 		}
 	}
 }
 
-void HGCPlotting::CalculateCircleStats( std::string out_directory ) {
+void HGCPlotting::CalculateCircleStats(  ) {
 	/*Does stuff on _radial_reconstruction dataset*/
 	/*Output onto _radial_results*/
 	for (auto& r_pair : _radial_reconstruction["e_sum"]) {
 		_radial_results["mean_e_sum"][r_pair.first] = Mean(r_pair.second);
 	}
 
+	/*TEMP vectors for plotting*/
 	std::vector<double> tmp_r;
-	std::vector<double> tmp_sigee;
-
-	//_radial_reconstruction["e_res"] 
+	std::vector<double> tmp_sigee; 
 	for (auto & r_pair : _radial_reconstruction["e_res"]) {
+		/*Find the mean, */ 
 		_radial_results["mean_e_res"][r_pair.first] = Mean(r_pair.second); 
 		_radial_results["stdev_e_res"][r_pair.first] = Deviation(r_pair.second, _radial_results["mean_e_res"][r_pair.first] );
 		//std::cout << r_pair.first << "\t" << "Mean e_res " << Mean(r_pair.second) << "\n";
 		_radial_results["sig_e_e"][r_pair.first] = _radial_results["stdev_e_res"][r_pair.first] / _radial_results["mean_e_sum"][r_pair.first]; 
-		
-		std::cout << r_pair.first << "\t" << "sigma_E/E\t" << _radial_results["sig_e_e"][r_pair.first] << "\n"; 
+		/*Print results?*/
+		//std::cout << r_pair.first << "\t" << "sigma_E/E\t" << _radial_results["sig_e_e"][r_pair.first] << "\n"; 	
 		tmp_r.push_back(r_pair.first);
 		tmp_sigee.push_back(_radial_results["sig_e_e"][r_pair.first]); 
 	}
 
+	/*Plottign Stuff -> Move somewhere else!?*/ 
 	//Make some plots! 
 	// TVector<float> tvf(svf.size(), &svf[0]);
+	/*Convert from std::vector<double> to TVectorD*/
 	TVectorD tv_r(tmp_r.size(), &tmp_r[0]);	
 	TVectorD tv_sigee(tmp_sigee.size(), &tmp_sigee[0]);
 
-	TFile f(("output/" + out_directory + "/testout.root").c_str(),"RECREATE");
-	f.cd();
-	//TGraph g(10);
-	_graphs["test"] = new TGraph( tv_r,tv_sigee );  
-	_graphs["test"]->Write();
+	/*Add graph to map of graphs created*/
+	_graphs["sigma_EE_r"] = new TGraph( tv_r,tv_sigee );  
+	_graphs["sigma_EE_r"]->SetName("Sigma_EE_r"); //set name of plot!
+	/*Perhaps add other stuff like a title*/
 }
 
 
+void HGCPlotting::CalculateCircleStats(int eta_n) {
+/*Implement method to circle stats for a range of ETAs*/
+	// How to sort by eta
+}	
 /* TODO: 
  *	- Implement scheme to split results by eta
  *		- Where to store eta data?

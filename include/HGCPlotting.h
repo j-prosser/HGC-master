@@ -68,7 +68,7 @@ class HGCPlotting : public BuildTreeBase {
   typedef std::map<std::string, std::vector<double>> vectormap;
   
   typedef std::map<double, std::vector<double>> doublevectormap;
-  typedef std::map<std::string, doublevectormap> stringdoublemap;
+  typedef std::map<std::string, std::map<double,std::vector<double>>> stringdoublemap;
 
   /* string : double : vector(doubles) 
    * data_id : r_curr : vector(data) */
@@ -103,9 +103,10 @@ class HGCPlotting : public BuildTreeBase {
 
   void CalculateTriggerCellVariables();
 
-  void CalculateReducedCircle(const double& R);
+  //void CalculateReducedCircle(const double& R);
 
-  void CalculateCircleStats( std::string _output_directory );
+  void CalculateCircleStats();
+  void CalculateCircleStats(int eta_n); // eta_n-> number of eta increments? 
 
   void FillAllHists( std::string name );
 

@@ -207,10 +207,11 @@ void HGCPlotting::Loop( ){
 		std::cout << "\n";
 	}  
 
-	CalculateCircleStats( _out_directory );
-	/*Now Fill scatter plot*/
+	/*Calculate SigmaE/E versus R*/
+	CalculateCircleStats( );
 
-
+	/*Calculate SigmaE/E versus R for increments in eta*/
+	
 }
 
 
@@ -239,12 +240,15 @@ void HGCPlotting::Save(){
 	it1.second->Write();
   } 
 
+  for(auto &it1 : _graphs){
+	it1.second->Write();		  
+  }
+
   f_hists->Close();
 }
 
 
 //////////
-
 
 
 
