@@ -79,6 +79,12 @@ class HGCPlotting : public BuildTreeBase {
   typedef std::map< std::string, std::map<double, double> > stringdoubledouble;
   stringdoubledouble _radial_results;
 
+	// Datastructures for eta-separated radial reconstruction...
+	typedef std::map<std::string, stringdoublemap> stringstringdoublemap;
+	typedef std::map<std::string, stringdoubledouble> stringstringdoubledouble;
+	stringstringdoublemap _radial_eta_reconstruction; // NEW
+	stringstringdoubledouble _radial_eta_results; // NEW
+
 
   plot_2d_map _2d_plots; 
   map_tgraphs _graphs; 

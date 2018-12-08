@@ -138,6 +138,7 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 	_event_variables["xnbt"] = std::cos(gen_phi->at(0)) / sinh(gen_eta->at(1)); 
 	_event_variables["ynbt"] = std::sin(gen_phi->at(0)) / sinh(gen_eta->at(1));  
 
+	//std::cout << gen_eta->at(0) << "\t" << gen_eta->at(1)<<"\n"; 
 }
 
 /*Constructor saves the truth value to instance variables*/
@@ -276,13 +277,17 @@ void HGCPlotting::FillAllHists( std::string name ){
 		//_cloned_hist [ name ] [ HIST NAME ] ->Fill ([_event_variables["bd_pos_E"]]); 
   
 	} else if ( name == "Radial_Reconstruction") {
+		
+
 	// USE: _radial_reconstruction INSTEAD, <std::string, vector<double> >
 	/*Generate a vector of decreasing R (for each event)*/
 		// Define range of R's to be calculated
 
 		//Move this to a different scope?
 		std::vector<double> Rs = generate_R(0.1, 0.005, 0.002); 
-		
+		//std::vector<double> ETAs = generate_R(3.0, 1.47, 0.51);
+
+
 	// Initialise with vars
 		Candidate fCand( _event_variables["xnft"], _event_variables["ynft"], gen_pt->at(0)); 
 		Candidate bCand( _event_variables["xnbt"], _event_variables["ynbt"], gen_pt->at(1));
@@ -308,23 +313,43 @@ void HGCPlotting::FillAllHists( std::string name ){
 				std::cout << "bERes/ESum" <<"\t\t" <<bCand.getERes() << "\\" << bCand.getESum() <<"\n"; 
 				std::cout << "bPosition Res.\t" << bCand.getXRes() << "\n";
 			}
-			// NEED TO ADD THESE VALUES TO A GLOBAL data structure, such that they can be summed later, when 
-			// processes have finished for all events. 
-			// USE _radial_reconstruction
-			_radial_reconstruction["e_res"][r_curr].push_back(fCand.getERes() );
-			_radial_reconstruction["e_res"][r_curr].push_back(bCand.getERes() );
-			_radial_reconstruction["e_sum"][r_curr].push_back(fCand.getESum() );
-			_radial_reconstruction["e_sum"][r_curr].push_back(bCand.getESum() );
+			// Store results for each R, in _radial_reconstruction
+			_radial_reconstruction["e_res"][r_curr].push_back( fCand.getERes() );
+			_radial_reconstruction["e_res"][r_curr].push_back( bCand.getERes() );
+			_radial_reconstruction["e_sum"][r_curr].push_back( fCand.getESum() );
+			_radial_reconstruction["e_sum"][r_curr].push_back( bCand.getESum() );
+
+			//Separate by ETA, assume; gen_eta_forward == -gen_eta_backward 
+			if (1.47<= _event_variables["feta"] &&  _event_variables["feta"] < 1.98) {
+				_radial_eta_reconstruction["1.47_1.98"]["e_res"][r_curr].push_back(fCand.getERes());
+				_radial_eta_reconstruction["1.47_1.98"]["e_res"][r_curr].push_back(bCand.getERes());		
+				_radial_eta_reconstruction["1.47_1.98"]["e_sum"][r_curr].push_back(fCand.getESum());
+				_radial_eta_reconstruction["1.47_1.98"]["e_sum"][r_curr].push_back(bCand.getESum());
+			} else if (1.98 <= _event_variables["feta"] && _event_variables["feta"] < 2.49) {
+			
+				_radial_eta_reconstruction["1.98_2.49"]["e_res"][r_curr].push_back(fCand.getERes());
+				_radial_eta_reconstruction["1.98_2.49"]["e_res"][r_curr].push_back(bCand.getERes());		
+				_radial_eta_reconstruction["1.98_2.49"]["e_sum"][r_curr].push_back(fCand.getESum());
+				_radial_eta_reconstruction["1.98_2.49"]["e_sum"][r_curr].push_back(bCand.getESum());
+			} else if (2.49 <= _event_variables["feta"] && _event_variables["feta"] < 3.00) {
+			
+				_radial_eta_reconstruction["1.98_3.00"]["e_res"][r_curr].push_back(fCand.getERes());
+				_radial_eta_reconstruction["1.98_3.00"]["e_res"][r_curr].push_back(bCand.getERes());		
+				_radial_eta_reconstruction["1.98_3.00"]["e_sum"][r_curr].push_back(fCand.getESum());
+				_radial_eta_reconstruction["1.98_3.00"]["e_sum"][r_curr].push_back(bCand.getESum());
+			}
 
 			// Increment loop (important!)
 			r_idx +=1;
 		}
+		
 	}
 }
 
 void HGCPlotting::CalculateCircleStats(  ) {
 	/*Does stuff on _radial_reconstruction dataset*/
 	/*Output onto _radial_results*/
+	
 	for (auto& r_pair : _radial_reconstruction["e_sum"]) {
 		_radial_results["mean_e_sum"][r_pair.first] = Mean(r_pair.second);
 	}
