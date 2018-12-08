@@ -1,55 +1,41 @@
-/******************************************************************************
-HGC analysis code
-Samuel Webb
-Imperial College
-***************************************************************************/
-
-// Time-stamp: <2018-11-01 13:44:34 (snwebb)>
-
 #include "HGCPlotting.h"
 #include "algorithm"
 #include "functions.h"
 
 HGCPlotting::HGCPlotting( CmdLine * cmd ){
+	_cmd = cmd; 
+	_origDir = gDirectory ;
+	_in_directory = _cmd->string_val( "--in_directory" ) ;
+	_out_directory = _cmd->string_val( "--out_directory" ) ;
+	_max_events =  _cmd->int_val( "--max_events"  , -1);
 
-  _cmd = cmd; 
-  _origDir = gDirectory ;
-  _in_directory = _cmd->string_val( "--in_directory" ) ;
-  _out_directory = _cmd->string_val( "--out_directory" ) ;
-  _max_events =  _cmd->int_val( "--max_events"  , -1);
-
-
-  // ANYTHING ADDED TO _HistoSets will create a histogram, if defined in src/Histogramming.cxx, 
-  // where "NAME" is the argument checked for in Histogramming
-
-//  _HistoSets.push_back( "PU0_General" );
-  _HistoSets.push_back( "PU0_forward" );
-  _HistoSets.push_back( "PU0_backward" );
-
-  _HistoSets.push_back("Radial_Reconstruction"); 
-  //yoyo
-//  _HistoSets.push_back( "TriggerCells" );
-  //_HistoSets.push_back( "" );
-
+// ANYTHING ADDED TO _HistoSets will create a histogram, if defined in src/Histogramming.cxx,
+// where "NAME" is the argument checked for in Histogramming
+	//_HistoSets.push_back( "PU0_General" );
+	_HistoSets.push_back( "PU0_forward" );
+	_HistoSets.push_back( "PU0_backward" );
+	_HistoSets.push_back("Radial_Reconstruction");   
+	//_HistoSets.push_back( "TriggerCells" );
+	//_HistoSets.push_back( "" );
 }
 
-
 HGCPlotting::~HGCPlotting() {
-
-  gDirectory = _origDir ;
-
+  gDirectory = _origDir;
+  /* Delete Hists */
   for(auto &it1 : _cloned_hists) {
     for(auto &it2 : it1.second) {
       it2.second->Delete();
     }
+  }	
+  /* Delete graphs */
+  for (auto &it : _graphs) {
+	  it.second->Delete();
   }
-
 }
 
 void HGCPlotting::DoNothing(){
 	std::cout << "DoNothing" <<std::endl;
 }
-
 
 void HGCPlotting::SetupRoot(){
 
@@ -66,20 +52,15 @@ void HGCPlotting::SetupRoot(){
   MakeAllHists( _HistoSets ); 
 }
 
-
 void HGCPlotting::Fill(){
   Init( _chain );
   Loop( );
 }
 
-
 void HGCPlotting::Loop( ){
-
   //Loop over events
-
   std::cout << "****\tBeginning Event Loop\t****" << std::endl;
 
-  
   if (fChain == 0) return;
 
   //std::cout << "Getting Number of Events" << std::endl;
@@ -124,11 +105,9 @@ void HGCPlotting::Loop( ){
       if ( jentry > _max_events ) break;
     }
     
-	
 	/* Generate TC read outs*/	
 	CalculateTriggerCellVariables();
 	
-
 	/* Histograms are Filled using their respective data
 	 * RUNS EVERY EVENT*/ 
 	for (auto& names : _HistoSets ){
@@ -190,9 +169,6 @@ void HGCPlotting::Loop( ){
     // NOT TESTED std::cout << "pt:" << gen_pt->at(0)<<"/"<<gen_pt->at(1)<<std::endl;
     //std::cout << "SIZE TRUTH: "<< gen_eta->size()<< std::endl;
     }
-
-
-
   }
 	std::cout << "****\tEND of Event Loop\t****" << std::endl;
 	
@@ -217,9 +193,7 @@ void HGCPlotting::Loop( ){
 	
 }
 
-
 bool HGCPlotting::FileExists( std::string file ){
-
   struct stat buf;
   if (  stat (  ( file ).c_str(), &buf ) == 0)
     return true;
@@ -229,8 +203,7 @@ bool HGCPlotting::FileExists( std::string file ){
 }
 
 void HGCPlotting::Save(){
-
-  // This needs rework!!!
+  /* Method to save plots */
   std::system( ("mkdir -p output/" + _out_directory  )   .c_str() );  
   TFile * f_hists = new TFile(  ("output/" + _out_directory + "/output.root").c_str(), "RECREATE" );
  
@@ -239,6 +212,8 @@ void HGCPlotting::Save(){
       it2.second->Write();
     }
   }
+
+  /* Only used in special case for plotting event 0  */
   for(auto &it1 : _2d_plots){
 	it1.second->Write();
   } 

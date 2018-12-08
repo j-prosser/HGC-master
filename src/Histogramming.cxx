@@ -243,10 +243,10 @@ void HGCPlotting::FillAllHists( std::string name ){
 				_radial_eta_reconstruction["1.98_2.49"]["e_sum"][r_curr].push_back(bCand.getESum());
 			} else if (2.49 <= gen_eta->at(0) && gen_eta->at(0) < 3.00) {
 			
-				_radial_eta_reconstruction["1.98_3.00"]["e_res"][r_curr].push_back(fCand.getERes());
-				_radial_eta_reconstruction["1.98_3.00"]["e_res"][r_curr].push_back(bCand.getERes());		
-				_radial_eta_reconstruction["1.98_3.00"]["e_sum"][r_curr].push_back(fCand.getESum());
-				_radial_eta_reconstruction["1.98_3.00"]["e_sum"][r_curr].push_back(bCand.getESum());
+				_radial_eta_reconstruction["2.49_3.00"]["e_res"][r_curr].push_back(fCand.getERes());
+				_radial_eta_reconstruction["2.49_3.00"]["e_res"][r_curr].push_back(bCand.getERes());		
+				_radial_eta_reconstruction["2.49_3.00"]["e_sum"][r_curr].push_back(fCand.getESum());
+				_radial_eta_reconstruction["2.49_3.00"]["e_sum"][r_curr].push_back(bCand.getESum());
 			}
 
 			// Increment loop (important!)
