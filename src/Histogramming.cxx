@@ -1,10 +1,8 @@
 
 #include "HGCPlotting.h"
 #include <cmath> 
-
 #include <candidate.h>
 #include <TVectorD.h> 
-
 
 void HGCPlotting::MakeAllHists( std::vector<std::string> &HistoSets){
 	/*Runs LoadHistoTemplates for name in Histosets*/
