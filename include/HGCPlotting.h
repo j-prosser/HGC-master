@@ -115,6 +115,8 @@ class HGCPlotting : public BuildTreeBase {
 
   //void CalculateReducedCircle(const double& R);
 
+	void eta_plots();
+
   void CalculateCircleStats();
 
   

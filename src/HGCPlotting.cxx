@@ -1,7 +1,7 @@
 #include "HGCPlotting.h"
 #include "algorithm"
 #include "functions.h"
-//#include "VPMC.h"
+#include "VPMC.h"
 
 HGCPlotting::HGCPlotting( CmdLine * cmd ){
 	_cmd = cmd; 
@@ -172,8 +172,17 @@ void HGCPlotting::Loop( ){
     }
   }
 	std::cout << "****\tEND of Event Loop\t****" << std::endl;
-	
 	/*Occurs after loop*/
+
+
+	/*TESTING*/
+	//try get the VITO output code...
+	VPMC * VT = new VPMC();  
+	VT->Loop();
+}
+
+void HGCPlotting::eta_plots() {
+
 	for (auto const& x : _radial_reconstruction) {
 		std::cout << "DATA_NAME:\t"<< x.first << "\n";
 		for (auto const& y: x.second) {
@@ -192,10 +201,6 @@ void HGCPlotting::Loop( ){
 	}
 
 
-	/*TESTING*/
-	//try get the VITO output code...
-	//VPMC * test_vp =new VPMC(); 
-	//test_vp->Loop();
 }
 
 bool HGCPlotting::FileExists( std::string file ){

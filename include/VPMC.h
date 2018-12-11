@@ -15,11 +15,11 @@
 // Header file for the classes stored in the TTree if any.
 #include "vector"
 #include "TObject.h"
-
+#include <iostream>
 // Figure this out!
 
 //test
-using namespace std;
+//using namespace std;
 
 class VPMC {
 public :
@@ -50,9 +50,9 @@ public :
    UInt_t          endcap0__lastLayer[kMaxendcap0];   //[endcap0_]
    UInt_t          endcap0__maxLayer[kMaxendcap0];   //[endcap0_]
    UInt_t          endcap0__showerLength[kMaxendcap0];   //[endcap0_]
-   vector<unsigned int> endcap0__clusters[kMaxendcap0];
-   vector<unsigned int> endcap0__cells[kMaxendcap0];
-   HGCgen          endcap0__nearestGen[kMaxendcap0];
+   std::vector<unsigned int> endcap0__clusters[kMaxendcap0];
+   std::vector<unsigned int> endcap0__cells[kMaxendcap0];
+   //HGCgen          endcap0__nearestGen[kMaxendcap0];
    Float_t         endcap0__xNorm[kMaxendcap0];   //[endcap0_]
    Float_t         endcap0__yNorm[kMaxendcap0];   //[endcap0_]
    Int_t           endcap1_;
@@ -74,9 +74,9 @@ public :
    UInt_t          endcap1__lastLayer[kMaxendcap1];   //[endcap1_]
    UInt_t          endcap1__maxLayer[kMaxendcap1];   //[endcap1_]
    UInt_t          endcap1__showerLength[kMaxendcap1];   //[endcap1_]
-   vector<unsigned int> endcap1__clusters[kMaxendcap1];
-   vector<unsigned int> endcap1__cells[kMaxendcap1];
-   HGCgen          endcap1__nearestGen[kMaxendcap1];
+   std::vector<unsigned int> endcap1__clusters[kMaxendcap1];
+   std::vector<unsigned int> endcap1__cells[kMaxendcap1];
+   //HGCgen          endcap1__nearestGen[kMaxendcap1];
    Float_t         endcap1__xNorm[kMaxendcap1];   //[endcap1_]
    Float_t         endcap1__yNorm[kMaxendcap1];   //[endcap1_]
 
