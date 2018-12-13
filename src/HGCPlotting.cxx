@@ -138,11 +138,13 @@ void HGCPlotting::Loop( ){
 	
   SetupVPMC();
   //Get size of VPMC root file
-  
-  int _ventries = _vcomp->fChain->GetEntriesFast();
-  std::cout << "VPMC Entries:\t"<< _ventries << "\n";
-  
-
+	int _ventries=0;
+	std::cout <<"\t_vcomp\t"<< _vcomp << "\n"
+		<< "\t_ventries\t" << _ventries << "\n";
+  if (_vcomp != 0) {
+	  _ventries = _vcomp->fChain->GetEntriesFast();
+	  std::cout << "VPMC Entries:\t"<< _ventries << "\n";
+  } 
   /* Loop over all entries -- every event*/
   for (Long64_t jentry=0; jentry<nentries;jentry++) {
 		/*LOOP-START*/
@@ -153,8 +155,8 @@ void HGCPlotting::Loop( ){
 		if ( jentry % 1000 == 0 ) {
 			std::cout << jentry << "/" << nentries  << "\n" ;
 		}
-		if ( _ventries != 0 || jentry > _ventries) {
-			//std::cout << "CUT AT VPMC no. of entries:" << "\n";
+		if ( (_ventries != 0) && (jentry > _ventries)) {
+			std::cout << "CUT AT VPMC no. of entries:" << "\n";
 			break;}
 		if ( _max_events != -1 ){ if ( jentry > _max_events ) break;}
     
@@ -173,7 +175,7 @@ void HGCPlotting::Loop( ){
 		/* Special Cases for debug and other stuff */
 		if (jentry==_view_event) {
 			std::cout	<< "***\tView Event\t***" <<	"\n"
-						<< "---\tEvent:"	<<	_view_event	<<	"---" <<	"\n";
+						<< "---\tEvent:"	<<	_view_event	<<	"\t---" <<	"\n";
 			/*Create plot of single event*/
 			// Create 2D histogram of event 0	
 		
@@ -214,7 +216,7 @@ void HGCPlotting::Loop( ){
 			}
 
 		// DISPLAY TRUTH INFOMATION <- Move this somewhere
-		if ( _verbose ) {
+		if ( _verbose) {
 			// Every jentry has different truth values!    
 			std::cout << "****TRUTH DATA:\n\tEntry:\t"<<  jentry << std::endl
 				<< "\tphi:\t"<< gen_phi->at(0)<<"/"<<gen_phi->at(1) <<std::endl
@@ -237,8 +239,10 @@ void HGCPlotting::Loop( ){
 
 	//SetupVPMC();
 	
+	if (_ventries ) {  
+		_vcomp->Loop();
+	}
 
-	_vcomp->Loop();
 	
 	/*if ( _vcomp->Notify() ) {
 		std::cout << "\tComparing 3D Clusters\t" << "\n";
@@ -264,10 +268,21 @@ void HGCPlotting::PlotEnergyResolution() {
 	}*/  
 
 	/*Calculate SigmaE/E versus R*/
+	
+	
+	if (_verbose) {
+		std::cout << "Energy Resolution for entire detector againsts R\n" ; 
+	}
+
 	CalculateCircleStats( );
+	
 
 	/*Calculate SigmaE/E versus R for increments in eta*/
 	for (auto& eta_selection: _radial_eta_reconstruction){
+		if (_verbose) {
+			std::cout <<"\t"<< eta_selection.first << "\t"
+				<< eta_selection.first.size() << "\n";
+		}
 		GraphReducedCircle(eta_selection.second,eta_selection.first);
 	}
 }
