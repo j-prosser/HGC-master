@@ -16,6 +16,7 @@
 #include "vector"
 #include "TObject.h"
 #include <iostream>
+#include <string> 
 // Figure this out!
 
 //test
@@ -26,6 +27,7 @@ public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
 
+   std::string _in_file;
 // Fixed size dimensions of array or collections stored in the TTree if any.
    static constexpr Int_t kMaxendcap0 = 1;
    static constexpr Int_t kMaxendcap1 = 2;
@@ -130,7 +132,8 @@ public :
    TBranch        *b_endcap1__xNorm;   //!
    TBranch        *b_endcap1__yNorm;   //!
 
-   VPMC(TTree *tree=0);
+   VPMC(std::string in_file, TTree *tree=0);
+   
    virtual ~VPMC();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);

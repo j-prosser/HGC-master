@@ -4,21 +4,31 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <vector> 
+#include <string>
 //using namespace std;
 
 
 
-VPMC::VPMC(TTree *tree) : fChain(0) 
+VPMC::VPMC(std::string in_file, TTree *tree) :_in_file(in_file),  fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("PU0_vito_code_2.root");
-      if (!f || !f->IsOpen()) {
-         f = new TFile("PU0_vito_code_2.root");
-      }
-      f->GetObject("newC3Ds",tree);
 
+
+	   std::cout << "FINDING FILE\t" << _in_file << "\n";
+       
+	   //std::string tmp_s =  "PU0_vito_code_2";
+	   _in_file = in_file +  ".root";
+
+	   TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(_in_file.c_str());
+      
+      //TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("PU0_vito_code_2.root");
+	  if (!f || !f->IsOpen()) {
+         f = new TFile(_in_file.c_str() );
+         //f = new TFile("PU0_vito_code_2.root");
+	  }
+      f->GetObject("newC3Ds",tree);
    }
    Init(tree);
 }
@@ -57,7 +67,6 @@ void VPMC::Init(TTree *tree)
    // code, but the routine can be extended by the user if needed.
    // Init() will be called many times when running on PROOF
    // (once per file to be processed).
-
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -185,7 +194,8 @@ void VPMC::Loop()
 
 	std::cout << "Entry:\t" << jentry << "\n";	
 	std::cout << "xNorm:\t" << endcap0__xNorm << "\n";
-   }
+   } // END of Loop
+   std::cout << "HGC-CMSSW-ANLYSIS Variables Loaded!\n";
 }
 
 

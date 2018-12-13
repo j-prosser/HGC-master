@@ -35,6 +35,8 @@ Imperial College
 #include <iomanip>
 #include <cmath>
 
+#include "VPMC.h" 
+
 
 typedef std::map< std::string, std::map<double, double> > stringdoubledouble;
 typedef std::map<std::string, std::map<double,std::vector<double>>> stringdoublemap;
@@ -44,62 +46,64 @@ class HGCPlotting : public BuildTreeBase {
 		
 	private :
   
-  /***** General *****/
-  CmdLine * _cmd ;
-  std::string _in_directory;
-  std::string _out_directory;
-  TDirectory * _origDir ;
+	/***** General *****/
+	CmdLine * _cmd ;
+	std::string _in_directory;
+	std::string _out_directory;
+	TDirectory * _origDir ;
   
-  /*Globals in HGCPlotting*/
-  int _max_events;
-  std::vector<std::string> _HistoSets;
-  TChain * _chain    ;  
+	/*Command line HGCPlotting instance variables*/
+	int _verbose;
 
-  typedef std::map< std::string, TH1D* > histmap;
-  typedef std::map< std::string, histmap > clonemap;
-  typedef std::map< std::string, double > doublemap;
+	int _max_events;			// -1 default : all events.
+	int _energy_resolution;		// 1 : on (default), 0 : off
+	int _position_resolution;	// 1 : on, 0 : off, NOT IMPLEMENTED
+	int _PU;					// pile up, default 0, NOT IMPLEMENTED
+	int _view_event;			// View/debug a view of a single event 
+	std::string _compareC3D;			// compare CMSSW ntuples with HGC-CMSSW-ANLYSIS
 
+	/*Ploting Structures*/
+	std::vector<std::string> _HistoSets;
+	TChain * _chain    ;  
 
-  clonemap _cloned_hists;  // map string -> histmap -> string-> TH1D
-  doublemap _event_variables; // map string -> double
+	typedef std::map< std::string, TH1D* > histmap;
+	typedef std::map< std::string, histmap > clonemap;
+	typedef std::map< std::string, double > doublemap;
 
+	clonemap _cloned_hists;  // map string -> histmap -> string-> TH1D
+	doublemap _event_variables; // map string -> double
 
-
-	// define vector of 
-	typedef std::map<std::string, TH2D*> plot_2d_map;
-	typedef std::map<std::string, TGraph*> map_tgraphs;
-
-
-  //doublemap _event_single;
 	typedef std::map<std::string, std::vector<double>> vectormap;
-  
 	typedef std::map<double, std::vector<double>> doublevectormap;
-
-  /* string : double : vector(doubles) 
-   * data_id : r_curr : vector(data) */
-  stringdoublemap _radial_reconstruction;
-  
-  vectormap _event_details; // map of vectors 
-
-  stringdoubledouble _radial_results;
+	/* string : double : vector(doubles) 
+	* data_id : r_curr : vector(data) */
+	stringdoublemap		_radial_reconstruction;
+	vectormap			_event_details; // map of vectors 
+	stringdoubledouble	_radial_results;
 
 	// Datastructures for eta-separated radial reconstruction...
-	typedef std::map<std::string, stringdoublemap> stringstringdoublemap;
-	typedef std::map<std::string, stringdoubledouble> stringstringdoubledouble;
-	stringstringdoublemap _radial_eta_reconstruction; // NEW
-	stringstringdoubledouble _radial_eta_results; // NEW
+	typedef std::map<std::string, stringdoublemap>		stringstringdoublemap;
+	typedef std::map<std::string, stringdoubledouble>	stringstringdoubledouble;
+	stringstringdoublemap		_radial_eta_reconstruction;	
+	stringstringdoubledouble	_radial_eta_results;		
 
+	// Pointer Maps {std::string : TPointer}
+	typedef std::map<std::string, TH2D*> plot_2d_map;
+	typedef std::map<std::string, TGraph*> map_tgraphs;	
+	plot_2d_map _2d_plots; 
+	map_tgraphs _graphs; 
 
-  plot_2d_map _2d_plots; 
-  map_tgraphs _graphs; 
-
- public :
+	VPMC * _vcomp; // HCA
+	
+	public :
   HGCPlotting( CmdLine * cmd );
   ~HGCPlotting();
   
   void DoNothing();
 
   void SetupRoot();
+
+  void SetupVPMC();
 
   //void SetupFillSingleEvent(); 
 
@@ -115,10 +119,9 @@ class HGCPlotting : public BuildTreeBase {
 
   //void CalculateReducedCircle(const double& R);
 
-	void eta_plots();
+  void PlotEnergyResolution();
 
   void CalculateCircleStats();
-
   
   void GraphReducedCircle(stringdoublemap& dataset, std::string graph_name);
 
@@ -131,6 +134,5 @@ class HGCPlotting : public BuildTreeBase {
   void Save();
   
 };
-
 
 #endif
