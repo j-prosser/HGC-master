@@ -139,7 +139,8 @@ void HGCPlotting::Loop( ){
   SetupVPMC();
   //Get size of VPMC root file
   
-  std::cout << "VPMC Entries:\t"<<_vcomp->fChain->GetEntriesFast() << "\n";
+  int _ventries = _vcomp->fChain->GetEntriesFast();
+  std::cout << "VPMC Entries:\t"<< _ventries << "\n";
   
 
   /* Loop over all entries -- every event*/
@@ -152,6 +153,9 @@ void HGCPlotting::Loop( ){
 		if ( jentry % 1000 == 0 ) {
 			std::cout << jentry << "/" << nentries  << "\n" ;
 		}
+		if ( _ventries != 0 || jentry > _ventries) {
+			//std::cout << "CUT AT VPMC no. of entries:" << "\n";
+			break;}
 		if ( _max_events != -1 ){ if ( jentry > _max_events ) break;}
     
 		/* Generate TC read outs*/	

@@ -1,0 +1,3 @@
+./FillHistograms --in_directory /home/johannes/host/simple-data/ntuples/ --out_directory . --max_events 100
+./FillHistograms --in_directory /home/johannes/host/simple-data/ --out_directory . --max_events 100 --compareC3D PU0_vito_code_2.root
+./FillHistograms --in_directory /home/johannes/host/simple-data/ --out_directory . --max_events 100 --compareC3D 'PU0_vito_code_2'
