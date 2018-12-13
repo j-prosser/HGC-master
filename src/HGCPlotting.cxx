@@ -30,8 +30,10 @@ HGCPlotting::HGCPlotting( CmdLine * cmd ){
 
 		std::cout << "\tInterpretting as PU0\n";
 
+		_HistoSets.push_back( "TriggerCells" );
 		_HistoSets.push_back( "PU0_forward" );
 		_HistoSets.push_back( "PU0_backward" );
+
 	} else if (_PU == 200) {
 		//TBA
 		std::cout << "\tInterpretting as PU200\n";
@@ -44,7 +46,6 @@ HGCPlotting::HGCPlotting( CmdLine * cmd ){
 	if (_position_resolution == 1) {
 		// TBA
 	} 
-	//_HistoSets.push_back( "TriggerCells" );
 	//_HistoSets.push_back( "" );
 }
 

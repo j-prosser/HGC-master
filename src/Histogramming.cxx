@@ -21,14 +21,15 @@ void HGCPlotting::LoadHistoTemplates( std::string name ) {
 	if ( name == "TriggerCells" ) {
 		_cloned_hists[ name ] [ "tc_eta" ] = new TH1D ( (name + "_tc_eta").c_str(), "", 100,-5,5 );  
 		_cloned_hists[ name ] [ "tc_phi" ] = new TH1D ( (name + "_tc_phi").c_str(), "", 100,-M_PI,M_PI );  // M_PI == Pi 
+
+		_cloned_hists[ name ] [ "tc_n" ] = new TH1D ( (name + "_tc_n").c_str(), "", 100,0,1000 );  
 	} else if ( name == "PU0_General" ){
-		  _cloned_hists[ name ] [ "tc_n" ] = new TH1D ( (name + "_tc_n").c_str(), "", 100,0,1000 );  
 	} else if ( name == "PU200" ){		
-		_cloned_hists[ name ] [ "tc_n" ] = new TH1D ( "default_tc_n", "", 100,0,100000 );  
+		/*_cloned_hists[ name ] [ "tc_n" ] = new TH1D ( "default_tc_n", "", 100,0,100000 );  
 		_cloned_hists[ name ] [ "ex_sum" ] = new TH1D ( "default_ex_sum", "", 150,-150,150);
 		_cloned_hists[ name ] [ "ey_sum" ] = new TH1D ( "default_ey_sum", "", 150,-150,150);
 		_cloned_hists[ name ] [ "er_sum" ] = new TH1D ( "default_er_sum", "", 150,0,150);
-		_cloned_hists[ name ] [ "ephi_sum" ] = new TH1D ( "default_ephi_sum", "", 150,-M_PI,M_PI);
+		_cloned_hists[ name ] [ "ephi_sum" ] = new TH1D ( "default_ephi_sum", "", 150,-M_PI,M_PI);*/
 	} else if ( name == "PU0_forward" || name == "PU0_backward" ){
 		_cloned_hists[ name ] [ "tc_n" ] = new TH1D ( (name + "_tc_n").c_str(), "", 100,0,1000 );  
 		_cloned_hists[ name ] [ "ex_sum" ] = new TH1D ( (name + "_ex_sum").c_str(), "", 150,-50,50);
@@ -43,7 +44,7 @@ void HGCPlotting::LoadHistoTemplates( std::string name ) {
 		//_cloned_hists[ name ] [ "dpos_Y" ] = new TH1D ( (name + "_dpos_y").c_str(), "", 150, -.04,.04);
 		//_cloned_hists[ name ] [ "dpos_X_E" ] = new TH1D ( (name + "_dpos_x_E").c_str(), "", 150, -.04,.04);
 		//_cloned_hists[ name ] [ "dpos_Y_E" ] = new TH1D ( (name + "_dpos_y_E").c_str(), "", 150, -.04,.04);
-		_cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);											   
+		//_cloned_hists[ name] [ "denergy_R" ] = new TH1D ( (name+"_denergy_R").c_str(), "", 150, -25.,25.);											   
 	} else if ( name == "Radial_Reconstruction" )  { 
 	//_graphs["sig_e_e_r"] = new TGraph(); // n,x,y	
 	// NO NEED TO INITALISE GRAPHS HERE!
@@ -166,9 +167,9 @@ void HGCPlotting::FillAllHists( std::string name ){
 		for (unsigned int i = 0; i < tc_eta->size(); i++){
 			_cloned_hists[ name ] [ "tc_eta" ] ->Fill ( tc_eta->at(i) );
 			_cloned_hists[ name ] [ "tc_phi" ] ->Fill ( tc_phi->at(i) );
+			_cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
 		}
 	} else if ( name == "PU0_General" ){
-    	_cloned_hists[ name ] [ "tc_n" ] ->Fill ( tc_n );
 	} else if ( name == "PU0_forward" ){
 		// Histograms for entire event, sums over all TCs
 		_cloned_hists[ name ] [ "ex_sum" ] ->Fill (  _event_variables[  "ex_sum_forward"  ] );
