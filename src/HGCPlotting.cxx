@@ -137,15 +137,18 @@ void HGCPlotting::Loop( ){
   //fChain->SetBranchStatus("",1);
   /* - - - - - - - - - - - - - - - - - - */
 	
-  SetupVPMC();
-  //Get size of VPMC root file
+  /*SETUP HGC-CMSSW-ANLYSIS (if required)*/
+	SetupVPMC();
 	int _ventries=0;
-	std::cout <<"\t_vcomp\t"<< _vcomp << "\n"
-		<< "\t_ventries\t" << _ventries << "\n";
-  if (_vcomp != 0) {
-	  _ventries = _vcomp->fChain->GetEntriesFast();
-	  std::cout << "VPMC Entries:\t"<< _ventries << "\n";
-  } 
+	std::cout	<<"\t_vcomp\t"<< _vcomp << "\n"
+				<< "\t_ventries\t" << _ventries << "\n";
+	if (_vcomp != 0) {
+		_ventries = _vcomp->fChain->GetEntriesFast();
+		/*Get size of VPMC root file*/
+		std::cout << "VPMC Entries:\t"<< _ventries << "\n";
+	} 
+	
+
   /* Loop over all entries -- every event*/
   for (Long64_t jentry=0; jentry<nentries;jentry++) {
 		/*LOOP-START*/
@@ -172,11 +175,14 @@ void HGCPlotting::Loop( ){
 			FillAllHists( names );
 		}
 
-
 		/* Special Cases for debug and other stuff */
 		if (jentry==_view_event) {
 			std::cout	<< "***\tView Event\t***" <<	"\n"
 						<< "---\tEvent:"	<<	_view_event	<<	"\t---" <<	"\n";
+			
+			/*	TODO: make a 2D scatter point of all TC's, for event 0, using TGraph
+			 * */
+
 			/*Create plot of single event*/
 			// Create 2D histogram of event 0	
 		
@@ -191,8 +197,8 @@ void HGCPlotting::Loop( ){
 	
 			//std::cout << "PLOTTING EVENT 0" << std::endl;		
 
-			//		auto x_lims = std::minmax_element (_event_details["xnf"].begin(), _event_details["xnf"].end());	
-			//		auto y_lims = std::minmax_element (_event_details["ynf"].begin(), _event_details["ynf"].end());
+					//auto x_lims = std::minmax_element (_event_details["xnf"].begin(), _event_details["xnf"].end());	
+					//auto y_lims = std::minmax_element (_event_details["ynf"].begin(), _event_details["ynf"].end());
 			//std::cout << "size of entire event " << _event_details["xnf"].size() <<std::endl; 
 			//std::cout << "x lims: " << *x_lims.first << " "<< *x_lims.second << std::endl; 
 
@@ -200,10 +206,10 @@ void HGCPlotting::Loop( ){
 			//_2d_plots["test_plot"]->Fill(_event_details["xnf"],_event_details["ynf"],_event_details["ptf"]);
 			//_2d_plots["test_plot"]->Draw("COLZ");	
 			//for (unsigned i =0; i < _event_details["ptf"].size(); ++i) {
-			//	_2d_plots["test_plot"]->Fill(_event_details["xnf"][i], _event_details["ynf"][i], _event_details["ptf"][i]);	
-			//	}
+				//_2d_plots["test_plot"]->Fill(_event_details["xnf"][i], _event_details["ynf"][i], _event_details["ptf"][i]);	
+				//}
 			//_2d_plots["test_plot"]->Draw("COLZ");
-			// other plot
+			 //other plot
 			//auto xlc = std::minmax_element(_event_details["xnfc"].begin(),_event_details["xnfc"].end());
 			//auto ylc = std::minmax_element(_event_details["ynfc"].begin(),_event_details["ynfc"].end());
 			//_2d_plots["cand_plot"] = new TH2D ("normalised_coord_cand_cirlce_0.05", "", 100,*xlc.first,*xlc.second,100,*ylc.first,*ylc.second);
@@ -224,8 +230,6 @@ void HGCPlotting::Loop( ){
 				<< "\teta:\t"<< gen_eta->at(0)<<"/"<<gen_eta->at(1) <<std::endl
 				<< "\tenergy:\t"<< gen_energy->at(0)<<"/"<<gen_energy->at(1)<<std::endl
 				<< "----\n";
-			// NOT TESTED std::cout << "pt:" << gen_pt->at(0)<<"/"<<gen_pt->at(1)<<std::endl;
-			//std::cout << "SIZE TRUTH: "<< gen_eta->size()<< std::endl;
 		}
   
   }/*Occurs after loop*/
