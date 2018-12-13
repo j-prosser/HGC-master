@@ -180,6 +180,23 @@ void HGCPlotting::Loop( ){
 			std::cout	<< "***\tView Event\t***" <<	"\n"
 						<< "---\tEvent:"	<<	_view_event	<<	"\t---" <<	"\n";
 			
+			std::string special_name = "special_event_" + std::to_string(jentry);
+	
+			//std::cout << "fX\t"<<_event_details["fX"].size() <<"\n";
+  
+			std::string graphname = "TC_" + special_name;
+			
+			std::vector<std::string> fb = {"fX","fY","bX","bY"}; 
+
+			plotFB(_event_details, fb, graphname, _graphs)	;		
+
+			//_graphs[graphname] = new TGraph(fnp, &_event_details["fX"][0] , &_event_details["fY"][0]); 
+			//_graphs[graphname]->SetName(("forward_"+graphname).c_str());
+			//_graphs[graphname]->SetTitle(("Event No."+std::to_string(jentry)+" Forward Trigger Cells").c_str());
+			//_graphs[graphname]->SetMarkerStyle(37);
+			// using event_details
+			//_graph[special_name.c_str()] = new TGraph(); // n,x,y
+			
 			/*	TODO: make a 2D scatter point of all TC's, for event 0, using TGraph
 			 * */
 
@@ -239,25 +256,10 @@ void HGCPlotting::Loop( ){
 		std::cout << "\tPlotting Energy Resolutions\n";
 		PlotEnergyResolution(); 
 	} 
-
-
-
-	//SetupVPMC();
 	
 	if (_ventries ) {  
 		_vcomp->Loop();
 	}
-
-	
-	/*if ( _vcomp->Notify() ) {
-		std::cout << "\tComparing 3D Clusters\t" << "\n";
-		
-		//try get the VITO output code...
-		// INPUT VITO CODE AS address
-		//
-		std::cout << "Worked?"<< "\n";
-		_vcomp->Loop();	
-	}*/ 
 }
 
 void HGCPlotting::PlotEnergyResolution() {
@@ -274,20 +276,13 @@ void HGCPlotting::PlotEnergyResolution() {
 
 	/*Calculate SigmaE/E versus R*/
 	
-	
-	if (_verbose) {
-		std::cout << "Energy Resolution for entire detector againsts R\n" ; 
-	}
+	if (_verbose) { std::cout << "Energy Resolution for entire detector againsts R\n" ; }
 
 	CalculateCircleStats( );
 	
-
 	/*Calculate SigmaE/E versus R for increments in eta*/
 	for (auto& eta_selection: _radial_eta_reconstruction){
-		if (_verbose) {
-			std::cout <<"\t"<< eta_selection.first << "\t"
-				<< eta_selection.first.size() << "\n";
-		}
+		if (_verbose) { std::cout<<"\t"<<eta_selection.first<<"\t"<< eta_selection.first.size() << "\n";}
 		GraphReducedCircle(eta_selection.second,eta_selection.first);
 	}
 }

@@ -132,7 +132,7 @@ class HGCPlotting : public BuildTreeBase {
   bool FileExists( std::string file );
 
   void Save();
-  
+ 
 };
 
 #endif
