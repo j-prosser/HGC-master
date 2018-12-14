@@ -193,10 +193,11 @@ void VPMC::Loop()
 	  //std::vector<double> XSX;
 
 
+	
 	  
 	std::cout << "Entry:\t" << jentry << "\n";	
 	std::cout << "xNorm:\t" << endcap0__xNorm[jentry] << "\n"
-		<< "yNoom:\t" << endcap1_yNorm[jentry] << "\n"
+		<< "yNoom:\t" << endcap0__yNorm[jentry] << "\n";
    } // END of Loop
    std::cout << "HGC-CMSSW-ANLYSIS Variables Loaded!\n";
 }
