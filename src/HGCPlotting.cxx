@@ -34,6 +34,8 @@ HGCPlotting::HGCPlotting( CmdLine * cmd ){
 		_HistoSets.push_back( "PU0_forward" );
 		_HistoSets.push_back( "PU0_backward" );
 
+		_HistoSets.push_back( "3DClusters" );
+
 	} else if (_PU == 200) {
 		//TBA
 		std::cout << "\tInterpretting as PU200\n";
@@ -133,6 +135,12 @@ void HGCPlotting::Loop( ){
   fChain->SetBranchStatus("tc_layer",1);
   fChain->SetBranchStatus("tc_zside",1);
 
+  fChain->SetBranchStatus("cl3d_energy");
+
+  fChain->SetBranchStatus("cl3d_pt");
+  fChain->SetBranchStatus("cl3d_n");
+  fChain->SetBranchStatus("cl3d_eta");
+  fChain->SetBranchStatus("cl3d_phi");
   // SYNTAX       
   //fChain->SetBranchStatus("",1);
   /* - - - - - - - - - - - - - - - - - - */
@@ -182,13 +190,22 @@ void HGCPlotting::Loop( ){
 			
 			std::string special_name = "special_event_" + std::to_string(jentry);
 	
-			//std::cout << "fX\t"<<_event_details["fX"].size() <<"\n";
-  
-			std::string graphname = "TC_" + special_name;
-			
+			/*Plot Forward / Backward for entire event*/
+			std::string graphname = "TC_" + special_name;	
 			std::vector<std::string> fb = {"fX","fY","bX","bY"}; 
+			plotFB(_event_details, fb, graphname, _graphs);
 
-			plotFB(_event_details, fb, graphname, _graphs)	;		
+
+			std::cout << "\t" << "3D Clusters" << "\n\t"
+				<< "cl3d energy\t" <<cl3d_energy->size() << "\n";
+
+			std::cout << "\t" << "3D Clusters" << "\n\t"
+				<< "cl3d phi\t" <<cl3d_phi->size() << cl3d_eta->size()<< "\n";
+
+			std::cout << "E\tPt\tphi\teta\n";
+			for (unsigned si =0; si < cl3d_energy->size();++si) {
+				std::cout <<cl3d_energy->at(si) <<"\t"<< cl3d_pt->at(si) << "\t"<< cl3d_phi->at(si)<<"\t"<< cl3d_eta->at(si)<<"\n"; 
+			}
 
 			//_graphs[graphname] = new TGraph(fnp, &_event_details["fX"][0] , &_event_details["fY"][0]); 
 			//_graphs[graphname]->SetName(("forward_"+graphname).c_str());
@@ -259,6 +276,7 @@ void HGCPlotting::Loop( ){
 	
 	if (_ventries ) {  
 		_vcomp->Loop();
+		/*Do stuf with _vcomp*/
 	}
 }
 

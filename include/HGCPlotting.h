@@ -94,7 +94,9 @@ class HGCPlotting : public BuildTreeBase {
 	map_tgraphs _graphs; 
 
 	VPMC * _vcomp; // HCA
-	
+	typedef std::map<std::string, std::vector<std::vector<double>> > map2dvector;
+	map2dvector dcl;
+
 	public :
   HGCPlotting( CmdLine * cmd );
   ~HGCPlotting();

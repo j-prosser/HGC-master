@@ -83,8 +83,19 @@ void HGCPlotting::CalculateTriggerCellVariables() {
 		_event_details["bX"].push_back(- tc_x->at(i) / tc_z->at(i) );
 		_event_details["bY"].push_back(- tc_y->at(i) / tc_z->at(i) );
 		_event_details["bP"].push_back( tc_pt->at(i) );
+		 
+		
 		}
 	}
+
+	for (unsigned cli =0; cli < cl3d_pt->size(); ++cli){
+		_event_details["c3pt"].push_back(cl3d_pt->at(cli)); 
+		_event_details["c3e"].push_back(cl3d_energy->at(cli));
+		_event_details["c3phi"].push_back(cl3d_phi->at(cli));
+		_event_details["c3eta"].push_back(cl3d_eta->at(cli));
+	}
+
+
 	/* Total energy sums in r, forward & backward*/
 	double ersum_forward = std::sqrt( exsum_forward*exsum_forward + eysum_forward*eysum_forward );
 	double ersum_backward = std::sqrt( exsum_backward*exsum_backward + eysum_backward*eysum_backward );
@@ -250,9 +261,19 @@ void HGCPlotting::FillAllHists( std::string name ){
 
 			// Increment loop (important!)
 			r_idx +=1;
-		}
+		} 
 		
-	}
+	} else if (name == "3DClusters" ) {
+		//std::cout << "3DClusters" << "\n";
+		/*std::cout << "cl3d_\tpt\teta\tphi\n"
+			<<"\t"<<cl3d_pt->size() 
+			<<"\t"<<cl3d_eta->size()
+			<<"\t"<<cl3d_phi->size() << "\n";
+*/
+
+
+	
+	} 
 }
 
 void HGCPlotting::CalculateCircleStats(  ) {
