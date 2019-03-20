@@ -3,6 +3,7 @@
 #include <cmath> 
 #include <candidate.h>
 #include <TVectorD.h> 
+#include <numeric>
 
 void HGCPlotting::MakeAllHists( std::vector<std::string> &HistoSets){
 	/*Runs LoadHistoTemplates for name in Histosets*/
